@@ -1,9 +1,8 @@
 {
-  "name": "typescript-action",
+  "name": "monorepo-jira-release-github-action",
   "description": "GitHub Actions TypeScript template",
   "version": "0.0.0",
-  "author": "",
-  "private": true,
+  "author": "Parro <parrok@gmail.com>",
   "homepage": "https://github.com/actions/typescript-action",
   "repository": {
     "type": "git",
@@ -13,9 +12,10 @@
     "url": "https://github.com/actions/typescript-action/issues"
   },
   "keywords": [
-    "actions",
-    "node",
-    "setup"
+    "github",
+    "action",
+    "jira",
+    "release"
   ],
   "exports": {
     ".": "./dist/index.js"
