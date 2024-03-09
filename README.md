@@ -1,6 +1,6 @@
 # Jira release GitHub action
 
-##### ... that works with monorepo
+*... that works with monorepo*
 
 [![GitHub Super-Linter](https://github.com/actions/typescript-action/actions/workflows/linter.yml/badge.svg)](https://github.com/super-linter/super-linter)
 ![CI](https://github.com/actions/typescript-action/actions/workflows/ci.yml/badge.svg)
@@ -23,5 +23,5 @@ Then:
 - Build release notes similar to the generated ones by Jira and set it in Jira
   release
 - Generate the release nots in GitHub
-- Create a Github release with the Jira release notes and the GitHub generated
+- Create a GitHub release with the Jira release notes and the GitHub generated
   notes
