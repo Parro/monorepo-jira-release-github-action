@@ -1,18 +1,23 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Jira release GitHub action for monorepo'
+description: 'GitHub action that creates a Jira and Github release whenever a tag is pushed'
+author: 'Parro<parrok@gmail.com>'
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: 'heart'
-  color: 'red'
+  icon: 'truck'
+  color: 'orange'
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  jira_project_domain:
+    description: 'Jira project domain'
     required: true
-    default: '1000'
+  jira_project_id:
+    description: 'Jira project id'
+    required: true
+  jira_project_key:
+    description: 'Jira issue key prefix'
+    required: true
 
 # Define your outputs here.
 outputs:
