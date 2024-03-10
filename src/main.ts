@@ -1,26 +1,40 @@
-import * as core from '@actions/core'
-import { wait } from './wait'
+import * as core from '@actions/core';
+import * as github from '@actions/github';
 
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
-export async function run(): Promise<void> {
-  try {
-    const ms: string = core.getInput('milliseconds')
+const main = async () => {
+  const jiraProjectDomain = core.getInput('jira_project_domain');
+  const jiraProjectId = core.getInput('jira_project_id');
+  const jiraProjectKey = core.getInput('jira_project_key');
+  core.debug(`jiraProjectDomain: ${jiraProjectDomain}`);
+  core.debug(`jiraProjectId: ${jiraProjectId}`);
+  core.debug(`jiraProjectKey: ${jiraProjectKey}`);
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+  const gitHubToken = process.env.GITHUB_TOKEN as string;
+  core.debug(`gitHubToken: ${gitHubToken}`);
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+  const oktokit = github.getOctokit(gitHubToken);
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
-  } catch (error) {
-    // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message)
-  }
-}
+  const {
+    repo: { owner, repo },
+    ref
+  } = github.context;
+  core.debug(`repo: ${repo}`);
+  core.debug(`owner: ${owner}`);
+  core.debug(`ref: ${ref}`);
+
+  const createReleaseResponse = await oktokit.rest.repos.createRelease({
+    owner,
+    repo,
+    tag_name: ref
+  });
+
+  core.debug(`createReleaseResponse: ${createReleaseResponse}`);
+
+  core.setOutput('Release url', createReleaseResponse.url);
+};
+
+export default main;

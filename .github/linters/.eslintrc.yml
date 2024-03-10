@@ -36,8 +36,7 @@ extends:
 
 rules:
   {
-    'camelcase': 
-    ['error', { 'ignoreDestructuring': true}],
+    'camelcase': ['error', { 'ignoreDestructuring': true }],
     'eslint-comments/no-use': 'off',
     'eslint-comments/no-unused-disable': 'off',
     'i18n-text/no-en': 'off',

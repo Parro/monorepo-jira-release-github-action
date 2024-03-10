@@ -1,6 +1,6 @@
 # Jira release GitHub action
 
-*... that works with monorepo*
+_... that works with monorepo_
 
 [![GitHub Super-Linter](https://github.com/actions/typescript-action/actions/workflows/linter.yml/badge.svg)](https://github.com/super-linter/super-linter)
 ![CI](https://github.com/actions/typescript-action/actions/workflows/ci.yml/badge.svg)
