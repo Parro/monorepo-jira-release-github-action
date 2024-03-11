@@ -16,7 +16,7 @@ const main = async () => {
   const gitHubToken = process.env.GITHUB_TOKEN as string;
   core.debug(`gitHubToken: ${gitHubToken}`);
 
-  const oktokit = github.getOctokit(gitHubToken);
+  const octokit = github.getOctokit(gitHubToken);
 
   const {
     repo: { owner, repo },
@@ -26,7 +26,34 @@ const main = async () => {
   core.debug(`owner: ${owner}`);
   core.debug(`ref: ${ref}`);
 
-  const createReleaseResponse = await oktokit.rest.repos.createRelease({
+  const listTagsResponse = await octokit.rest.repos.listTags({
+    owner,
+    repo,
+    per_page: 20
+  });
+  core.debug(`listTagsResponse: ${JSON.stringify(listTagsResponse.data)}`);
+
+  const tagDifference = await octokit.rest.repos.compareCommitsWithBasehead({
+    owner,
+    repo,
+    basehead: `${listTagsResponse.data[0].name}...${listTagsResponse.data[1].name}`,
+    per_page: 1
+  });
+  core.debug(`tagDifference: ${JSON.stringify(tagDifference)}`);
+  // const [latestCommit, previousCommit] = await Promise.all([
+  //   octokit.rest.repos.getCommit({
+  //     owner,
+  //     repo,
+  //     ref: latestTag.commit.sha
+  //   }),
+  //   octokit.rest.repos.getCommit({
+  //     owner,
+  //     repo,
+  //     ref: previousTag.commit.sha
+  //   })
+  // ]);
+
+  const createReleaseResponse = await octokit.rest.repos.createRelease({
     owner,
     repo,
     tag_name: ref
