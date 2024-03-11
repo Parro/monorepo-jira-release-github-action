@@ -13,7 +13,7 @@ const compareTags: CompareTags = async ({
         repository(owner: $owner, name: $repo) {
           ref(qualifiedName: $beforeTag) {
             compare(headRef: $lastTag) {
-              commits(first: 1) {
+              commits(first: 100) {
                 nodes {
                   oid,
                   message

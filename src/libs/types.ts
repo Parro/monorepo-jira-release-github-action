@@ -5,12 +5,20 @@ export type CompareTags = (args: {
   owner: string;
   repo: string;
   beforeTag: string;
-  lastTag: number;
+  lastTag: string;
 }) => Promise<GraphQlQueryResponseData>;
+
+export type FindInvolvedCommits = (args: {
+  client: typeof graphql;
+  owner: string;
+  repo: string;
+  currentTag: string;
+  tagsList: Array<string>;
+}) => Promise<void>;
 
 export type GetLastTags = (args: {
   client: typeof graphql;
   owner: string;
   repo: string;
-  limit: number;
+  first: number;
 }) => Promise<GraphQlQueryResponseData>;

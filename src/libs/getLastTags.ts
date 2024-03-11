@@ -1,11 +1,11 @@
 import type { GetLastTags } from './types';
 
-const getLastTags: GetLastTags = async ({ client, owner, repo, limit }) => {
+const getLastTags: GetLastTags = async ({ client, owner, repo, first }) => {
   return client(
     `
-      query ($owner: String!, $repo: String!, $last: Int) {
+      query ($owner: String!, $repo: String!, $first: Int) {
         repository(owner: $owner, name: $repo) {
-          refs(refPrefix: "refs/tags/", last: $last, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) {
+          refs(refPrefix: "refs/tags/", first: $first, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) {
             edges {
               node {
                 name
@@ -18,7 +18,7 @@ const getLastTags: GetLastTags = async ({ client, owner, repo, limit }) => {
     {
       owner,
       repo,
-      last: limit
+      first
     }
   );
 };

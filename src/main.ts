@@ -4,6 +4,7 @@ import * as github from '@actions/github';
 import type { GraphQlQueryResponseData } from '@octokit/graphql';
 import getLastTags from './libs/getLastTags';
 import compareTags from './libs/compareTags';
+import findInvolvedCommits from './libs/findInvolvedCommits';
 
 /**
  * The main function for the action.
@@ -40,35 +41,25 @@ const main = async () => {
     client: graphqlClient,
     owner,
     repo,
-    limit: 20
+    first: 20
   });
 
   core.debug(`tags response: ${JSON.stringify(tagsResponse)}`);
   core.debug(`tags: ${JSON.stringify(tagsResponse.repository.refs.edges)}`);
 
-  const tagsDifferenceGql = await compareTags({
+  const tagsList = tagsResponse.repository.refs.edges.map(
+    (edge: { node: { name: string } }) => edge.node.name
+  );
+
+  const involvedCommits = await findInvolvedCommits({
     client: graphqlClient,
     owner,
     repo,
-    beforeTag: tagsResponse.repository.refs.edges[1].node.name,
-    lastTag: tagsResponse.repository.refs.edges[0].node.name
+    currentTag: ref,
+    tagsList
   });
 
-  core.debug(`tagDifference: ${JSON.stringify(tagsDifferenceGql)}`);
-
-  // const [latestCommit, previousCommit] = await Promise.all([
-  //   octokit.rest.repos.getCommit({
-  //     owner,
-  //     repo,
-  //     ref: latestTag.commit.sha
-  //   }),
-  //   octokit.rest.repos.getCommit({
-  //     owner,
-  //     repo,
-  //     ref: previousTag.commit.sha
-  //   })
-  // ]);
-
+  console.log('🚀 ~ involvedCommits:', involvedCommits);
   const createReleaseResponse = await octokit.rest.repos.createRelease({
     owner,
     repo,

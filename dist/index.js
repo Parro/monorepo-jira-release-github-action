@@ -29007,7 +29007,7 @@ const compareTags = async ({ client, owner, repo, beforeTag, lastTag }) => {
         repository(owner: $owner, name: $repo) {
           ref(qualifiedName: $beforeTag) {
             compare(headRef: $lastTag) {
-              commits(first: 1) {
+              commits(first: 100) {
                 nodes {
                   oid,
                   message
@@ -29029,17 +29029,59 @@ exports["default"] = compareTags;
 
 /***/ }),
 
+/***/ 2029:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const compareTags_1 = __importDefault(__nccwpck_require__(432));
+const findInvolvedCommits = async ({ client, owner, repo, currentTag, tagsList }) => {
+    const beforeTag = tagsList.shift();
+    console.log('🚀 ~ currentTag:', currentTag);
+    console.log('🚀 ~ beforeTag:', beforeTag);
+    if (beforeTag !== undefined) {
+        const tagsCompared = await (0, compareTags_1.default)({
+            client,
+            owner,
+            repo,
+            beforeTag,
+            lastTag: currentTag
+        });
+        const { repository: { ref: { compare: { commits: { nodes: commits } } } } } = tagsCompared;
+        console.log('🚀 ~ commits:', commits);
+        if (commits.length > 0) {
+            return commits;
+        }
+        console.log('🚀 ~ currentTag recursive:', currentTag);
+        return findInvolvedCommits({
+            client,
+            owner,
+            repo,
+            currentTag,
+            tagsList
+        });
+    }
+};
+exports["default"] = findInvolvedCommits;
+
+
+/***/ }),
+
 /***/ 6283:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const getLastTags = async ({ client, owner, repo, limit }) => {
+const getLastTags = async ({ client, owner, repo, first }) => {
     return client(`
-      query ($owner: String!, $repo: String!, $last: Int) {
+      query ($owner: String!, $repo: String!, $first: Int) {
         repository(owner: $owner, name: $repo) {
-          refs(refPrefix: "refs/tags/", last: $last, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) {
+          refs(refPrefix: "refs/tags/", first: $first, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) {
             edges {
               node {
                 name
@@ -29051,7 +29093,7 @@ const getLastTags = async ({ client, owner, repo, limit }) => {
     `, {
         owner,
         repo,
-        last: limit
+        first
     });
 };
 exports["default"] = getLastTags;
@@ -29094,7 +29136,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const getLastTags_1 = __importDefault(__nccwpck_require__(6283));
-const compareTags_1 = __importDefault(__nccwpck_require__(432));
+const findInvolvedCommits_1 = __importDefault(__nccwpck_require__(2029));
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -29122,30 +29164,19 @@ const main = async () => {
         client: graphqlClient,
         owner,
         repo,
-        limit: 20
+        first: 20
     });
     core.debug(`tags response: ${JSON.stringify(tagsResponse)}`);
     core.debug(`tags: ${JSON.stringify(tagsResponse.repository.refs.edges)}`);
-    const tagsDifferenceGql = await (0, compareTags_1.default)({
+    const tagsList = tagsResponse.repository.refs.edges.map((edge) => edge.node.name);
+    const involvedCommits = await (0, findInvolvedCommits_1.default)({
         client: graphqlClient,
         owner,
         repo,
-        beforeTag: tagsResponse.repository.refs.edges[1].node.name,
-        lastTag: tagsResponse.repository.refs.edges[0].node.name
+        currentTag: ref,
+        tagsList
     });
-    core.debug(`tagDifference: ${JSON.stringify(tagsDifferenceGql)}`);
-    // const [latestCommit, previousCommit] = await Promise.all([
-    //   octokit.rest.repos.getCommit({
-    //     owner,
-    //     repo,
-    //     ref: latestTag.commit.sha
-    //   }),
-    //   octokit.rest.repos.getCommit({
-    //     owner,
-    //     repo,
-    //     ref: previousTag.commit.sha
-    //   })
-    // ]);
+    console.log('🚀 ~ involvedCommits:', involvedCommits);
     const createReleaseResponse = await octokit.rest.repos.createRelease({
         owner,
         repo,
