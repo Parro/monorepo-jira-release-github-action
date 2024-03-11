@@ -2,6 +2,8 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 
 import type { GraphQlQueryResponseData } from '@octokit/graphql';
+import getLastTags from './libs/getLastTags';
+import compareTags from './libs/compareTags';
 
 /**
  * The main function for the action.
@@ -28,75 +30,32 @@ const main = async () => {
   core.debug(`owner: ${owner}`);
   core.debug(`ref: ${ref}`);
 
-  const tagsResponse: GraphQlQueryResponseData = await octokit.graphql(
-    `
-      query ($owner: String!, $repo: String!, $last: Int) {
-        repository(owner: $owner, name: $repo) {
-          refs(refPrefix: "refs/tags/", last: $last, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) {
-            edges {
-              node {
-                name
-              }
-            }
-          }
-        }
-      }
-    `,
-    {
-      owner,
-      repo,
-      last: 20,
-      headers: {
-        authorization: `token ${gitHubToken}`
-      }
+  const graphqlClient = octokit.graphql.defaults({
+    headers: {
+      authorization: `token ${gitHubToken}`
     }
-  );
+  });
+
+  const tagsResponse = await getLastTags({
+    client: graphqlClient,
+    owner,
+    repo,
+    limit: 20
+  });
 
   core.debug(`tags response: ${JSON.stringify(tagsResponse)}`);
   core.debug(`tags: ${JSON.stringify(tagsResponse.repository.refs.edges)}`);
 
-  const listTagsResponse = await octokit.rest.repos.listTags({
+  const tagsDifferenceGql = await compareTags({
+    client: graphqlClient,
     owner,
     repo,
-    per_page: 20
+    beforeTag: tagsResponse.repository.refs.edges[1].node.name,
+    lastTag: tagsResponse.repository.refs.edges[0].node.name
   });
-  core.debug(`listTagsResponse: ${JSON.stringify(listTagsResponse.data)}`);
-  const tagsDifferenceGql: GraphQlQueryResponseData = await octokit.graphql(
-    `
-      query ($owner: String!, $repo: String!, $beforeTag: String!, $lastTag: String!) {
-        repository(owner: $owner, name: $repo) {
-          ref(qualifiedName: $beforeTag) {
-            compare(headRef: $lastTag) {
-              commits(first: 1) {
-                nodes {
-                  oid
-                }
-              }
-            }
-          }
-        }
-      }
-    `,
-    {
-      owner,
-      repo,
-      beforeTag: tagsResponse.repository.refs.edges[1].node.name,
-      lastTag: tagsResponse.repository.refs.edges[0].node.name,
-      headers: {
-        authorization: `token ${gitHubToken}`
-      }
-    }
-  );
 
   core.debug(`tagDifference: ${JSON.stringify(tagsDifferenceGql)}`);
 
-  const tagDifference = await octokit.rest.repos.compareCommitsWithBasehead({
-    owner,
-    repo,
-    basehead: `${listTagsResponse.data[0].name}...${listTagsResponse.data[1].name}`,
-    per_page: 1
-  });
-  core.debug(`tagDifference: ${JSON.stringify(tagDifference)}`);
   // const [latestCommit, previousCommit] = await Promise.all([
   //   octokit.rest.repos.getCommit({
   //     owner,
@@ -116,7 +75,7 @@ const main = async () => {
     tag_name: ref
   });
 
-  core.debug(`createReleaseResponse: ${createReleaseResponse}`);
+  core.debug(`createReleaseResponse: ${JSON.stringify(createReleaseResponse)}`);
 
   core.setOutput('Release url', createReleaseResponse.url);
 };

@@ -28995,6 +28995,70 @@ const main_1 = __importDefault(__nccwpck_require__(399));
 
 /***/ }),
 
+/***/ 432:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const compareTags = async ({ client, owner, repo, beforeTag, lastTag }) => {
+    return client(`
+      query ($owner: String!, $repo: String!, $beforeTag: String!, $lastTag: String!) {
+        repository(owner: $owner, name: $repo) {
+          ref(qualifiedName: $beforeTag) {
+            compare(headRef: $lastTag) {
+              commits(first: 1) {
+                nodes {
+                  oid,
+                  message
+                }
+              }
+            }
+          }
+        }
+      }
+    `, {
+        owner,
+        repo,
+        beforeTag: beforeTag,
+        lastTag: lastTag
+    });
+};
+exports["default"] = compareTags;
+
+
+/***/ }),
+
+/***/ 6283:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const getLastTags = async ({ client, owner, repo, limit }) => {
+    return client(`
+      query ($owner: String!, $repo: String!, $last: Int) {
+        repository(owner: $owner, name: $repo) {
+          refs(refPrefix: "refs/tags/", last: $last, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) {
+            edges {
+              node {
+                name
+              }
+            }
+          }
+        }
+      }
+    `, {
+        owner,
+        repo,
+        last: limit
+    });
+};
+exports["default"] = getLastTags;
+
+
+/***/ }),
+
 /***/ 399:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -29023,9 +29087,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
+const getLastTags_1 = __importDefault(__nccwpck_require__(6283));
+const compareTags_1 = __importDefault(__nccwpck_require__(432));
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -29044,65 +29113,27 @@ const main = async () => {
     core.debug(`repo: ${repo}`);
     core.debug(`owner: ${owner}`);
     core.debug(`ref: ${ref}`);
-    const tagsResponse = await octokit.graphql(`
-      query ($owner: String!, $repo: String!, $last: Int) {
-        repository(owner: $owner, name: $repo) {
-          refs(refPrefix: "refs/tags/", last: $last, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) {
-            edges {
-              node {
-                name
-              }
-            }
-          }
-        }
-      }
-    `, {
-        owner,
-        repo,
-        last: 20,
+    const graphqlClient = octokit.graphql.defaults({
         headers: {
             authorization: `token ${gitHubToken}`
         }
+    });
+    const tagsResponse = await (0, getLastTags_1.default)({
+        client: graphqlClient,
+        owner,
+        repo,
+        limit: 20
     });
     core.debug(`tags response: ${JSON.stringify(tagsResponse)}`);
     core.debug(`tags: ${JSON.stringify(tagsResponse.repository.refs.edges)}`);
-    const listTagsResponse = await octokit.rest.repos.listTags({
-        owner,
-        repo,
-        per_page: 20
-    });
-    core.debug(`listTagsResponse: ${JSON.stringify(listTagsResponse.data)}`);
-    const tagsDifferenceGql = await octokit.graphql(`
-      query ($owner: String!, $repo: String!, $beforeTag: String!, $lastTag: String!) {
-        repository(owner: $owner, name: $repo) {
-          ref(qualifiedName: $beforeTag) {
-            compare(headRef: $lastTag) {
-              commits(first: 1) {
-                nodes {
-                  oid
-                }
-              }
-            }
-          }
-        }
-      }
-    `, {
+    const tagsDifferenceGql = await (0, compareTags_1.default)({
+        client: graphqlClient,
         owner,
         repo,
         beforeTag: tagsResponse.repository.refs.edges[1].node.name,
-        lastTag: tagsResponse.repository.refs.edges[0].node.name,
-        headers: {
-            authorization: `token ${gitHubToken}`
-        }
+        lastTag: tagsResponse.repository.refs.edges[0].node.name
     });
     core.debug(`tagDifference: ${JSON.stringify(tagsDifferenceGql)}`);
-    const tagDifference = await octokit.rest.repos.compareCommitsWithBasehead({
-        owner,
-        repo,
-        basehead: `${listTagsResponse.data[0].name}...${listTagsResponse.data[1].name}`,
-        per_page: 1
-    });
-    core.debug(`tagDifference: ${JSON.stringify(tagDifference)}`);
     // const [latestCommit, previousCommit] = await Promise.all([
     //   octokit.rest.repos.getCommit({
     //     owner,
@@ -29120,7 +29151,7 @@ const main = async () => {
         repo,
         tag_name: ref
     });
-    core.debug(`createReleaseResponse: ${createReleaseResponse}`);
+    core.debug(`createReleaseResponse: ${JSON.stringify(createReleaseResponse)}`);
     core.setOutput('Release url', createReleaseResponse.url);
 };
 exports["default"] = main;
