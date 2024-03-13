@@ -28976,6 +28976,182 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 432:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const compareTags = async ({ client, owner, repo, beforeTag, lastTag }) => {
+    return client(`
+      query ($owner: String!, $repo: String!, $beforeTag: String!, $lastTag: String!) {
+        repository(owner: $owner, name: $repo) {
+          ref(qualifiedName: $beforeTag) {
+            compare(headRef: $lastTag) {
+              commits(first: 100) {
+                nodes {
+                  oid,
+                  message
+                }
+              }
+            }
+          }
+        }
+      }
+    `, {
+        owner,
+        repo,
+        beforeTag: beforeTag,
+        lastTag: lastTag
+    });
+};
+exports["default"] = compareTags;
+
+
+/***/ }),
+
+/***/ 2029:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const compareTags_1 = __importDefault(__nccwpck_require__(432));
+const findInvolvedCommits = async ({ client, owner, repo, currentTag, tagsList }) => {
+    const beforeTag = tagsList.shift();
+    console.log('🚀 ~ currentTag:', currentTag);
+    console.log('🚀 ~ beforeTag:', beforeTag);
+    if (beforeTag !== undefined) {
+        const tagsCompared = await (0, compareTags_1.default)({
+            client,
+            owner,
+            repo,
+            beforeTag,
+            lastTag: currentTag
+        });
+        const { repository: { ref: { compare: { commits: { nodes: commits } } } } } = tagsCompared;
+        console.log('🚀 ~ commits:', commits);
+        if (commits.length > 0) {
+            return commits;
+        }
+        console.log('🚀 ~ currentTag recursive:', currentTag);
+        return findInvolvedCommits({
+            client,
+            owner,
+            repo,
+            currentTag,
+            tagsList
+        });
+    }
+};
+exports["default"] = findInvolvedCommits;
+
+
+/***/ }),
+
+/***/ 6283:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const getLastTags = async ({ client, owner, repo, first }) => {
+    return client(`
+      query ($owner: String!, $repo: String!, $first: Int) {
+        repository(owner: $owner, name: $repo) {
+          refs(refPrefix: "refs/tags/", first: $first, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) {
+            edges {
+              node {
+                name
+              }
+            }
+          }
+        }
+      }
+    `, {
+        owner,
+        repo,
+        first
+    });
+};
+exports["default"] = getLastTags;
+
+
+/***/ }),
+
+/***/ 399:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.main = void 0;
+const core_1 = __importDefault(__nccwpck_require__(2186));
+const github_1 = __importDefault(__nccwpck_require__(5438));
+const getLastTags_1 = __importDefault(__nccwpck_require__(6283));
+const findInvolvedCommits_1 = __importDefault(__nccwpck_require__(2029));
+/**
+ * The main function for the action.
+ * @returns {Promise<void>} Resolves when the action is complete.
+ */
+async function main() {
+    const jiraProjectDomain = core_1.default.getInput('jira_project_domain');
+    console.log('🚀 ~ main ~ jiraProjectDomain:', jiraProjectDomain);
+    console.log('🚀 ~ main ~ github.context:', github_1.default.context);
+    const jiraProjectId = core_1.default.getInput('jira_project_id');
+    const jiraProjectKey = core_1.default.getInput('jira_project_key');
+    core_1.default.debug(`jiraProjectDomain: ${jiraProjectDomain}`);
+    core_1.default.debug(`jiraProjectId: ${jiraProjectId}`);
+    core_1.default.debug(`jiraProjectKey: ${jiraProjectKey}`);
+    const gitHubToken = process.env.GITHUB_TOKEN;
+    core_1.default.debug(`gitHubToken: ${gitHubToken}`);
+    const octokit = github_1.default.getOctokit(gitHubToken);
+    const { repo: { owner, repo }, ref } = github_1.default.context;
+    core_1.default.debug(`repo: ${repo}`);
+    core_1.default.debug(`owner: ${owner}`);
+    core_1.default.debug(`ref: ${ref}`);
+    const graphqlClient = octokit.graphql.defaults({
+        headers: {
+            authorization: `token ${gitHubToken}`
+        }
+    });
+    const tagsResponse = await (0, getLastTags_1.default)({
+        client: graphqlClient,
+        owner,
+        repo,
+        first: 20
+    });
+    core_1.default.debug(`tags  response: ${JSON.stringify(tagsResponse)}`);
+    core_1.default.debug(`tags: ${JSON.stringify(tagsResponse.repository.refs.edges)}`);
+    const tagsList = tagsResponse.repository.refs.edges.map((edge) => edge.node.name);
+    const involvedCommits = await (0, findInvolvedCommits_1.default)({
+        client: graphqlClient,
+        owner,
+        repo,
+        currentTag: ref,
+        tagsList
+    });
+    console.log('🚀 ~ involvedCommits:', involvedCommits);
+    const createReleaseResponse = await octokit.rest.repos.createRelease({
+        owner,
+        repo,
+        tag_name: ref
+    });
+    core_1.default.debug(`createReleaseResponse: ${JSON.stringify(createReleaseResponse)}`);
+    core_1.default.setOutput('Release url', createReleaseResponse.url);
+}
+exports.main = main;
+exports["default"] = main;
+
+
+/***/ }),
+
 /***/ 9491:
 /***/ ((module) => {
 
@@ -30823,92 +30999,6 @@ function parseParams (str) {
 module.exports = parseParams
 
 
-/***/ }),
-
-/***/ 9837:
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __nccwpck_require__) => {
-
-"use strict";
-__nccwpck_require__.r(__webpack_exports__);
-/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
-/* harmony export */   "main": () => (/* binding */ main)
-/* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(2186);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(5438);
-
-
-
-// import getLastTags from './libs/getLastTags';
-// import compareTags from './libs/compareTags';
-// import findInvolvedCommits from './libs/findInvolvedCommits';
-
-/**
- * The main function for the action.
- * @returns {Promise<void>} Resolves when the action is complete.
- */
-async function main() {
-  const jiraProjectDomain = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('jira_project_domain');
-  console.log('🚀 ~ main ~ jiraProjectDomain:', jiraProjectDomain);
-  const jiraProjectId = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('jira_project_id');
-  const jiraProjectKey = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('jira_project_key');
-  _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`jiraProjectDomain: ${jiraProjectDomain}`);
-  _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`jiraProjectId: ${jiraProjectId}`);
-  _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`jiraProjectKey: ${jiraProjectKey}`);
-
-  // const gitHubToken = process.env.GITHUB_TOKEN;
-  // core.debug(`gitHubToken: ${gitHubToken}`);
-
-  // const octokit = getOctokit(gitHubToken);
-
-  // const {
-  //   repo: { owner, repo },
-  //   ref
-  // } = context;
-  // core.debug(`repo: ${repo}`);
-  // core.debug(`owner: ${owner}`);
-  // core.debug(`ref: ${ref}`);
-
-  // const graphqlClient = octokit.graphql.defaults({
-  //   headers: {
-  //     authorization: `token ${gitHubToken}`
-  //   }
-  // });
-
-  // const tagsResponse = await getLastTags({
-  //   client: graphqlClient,
-  //   owner,
-  //   repo,
-  //   first: 20
-  // });
-
-  // debug(`tags response: ${JSON.stringify(tagsResponse)}`);
-  // debug(`tags: ${JSON.stringify(tagsResponse.repository.refs.edges)}`);
-
-  // const tagsList = tagsResponse.repository.refs.edges.map(
-  //   (edge) => edge.node.name
-  // );
-
-  // const involvedCommits = await findInvolvedCommits({
-  //   client: graphqlClient,
-  //   owner,
-  //   repo,
-  //   currentTag: ref,
-  //   tagsList
-  // });
-
-  // console.log('🚀 ~ involvedCommits:', involvedCommits);
-  // const createReleaseResponse = await octokit.rest.repos.createRelease({
-  //   owner,
-  //   repo,
-  //   tag_name: ref
-  // });
-
-  // debug(`createReleaseResponse: ${JSON.stringify(createReleaseResponse)}`);
-
-  // setOutput('Release url', createReleaseResponse.url);
-}
-
-
 /***/ })
 
 /******/ 	});
@@ -30944,34 +31034,6 @@ async function main() {
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__nccwpck_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/make namespace object */
-/******/ 	(() => {
-/******/ 		// define __esModule on exports
-/******/ 		__nccwpck_require__.r = (exports) => {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 			}
-/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
@@ -30987,7 +31049,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 /**
  * The entrypoint for the action.
  */
-const main_1 = __nccwpck_require__(9837);
+const main_1 = __nccwpck_require__(399);
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 (0, main_1.main)();
 
