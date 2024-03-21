@@ -28982,30 +28982,52 @@ function wrappy (fn, cb) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const compareTags = async ({ client, owner, repo, beforeTag, lastTag }) => {
-    return client(`
-      query ($owner: String!, $repo: String!, $beforeTag: String!, $lastTag: String!) {
-        repository(owner: $owner, name: $repo) {
-          ref(qualifiedName: $beforeTag) {
-            compare(headRef: $lastTag) {
-              commits(first: 100) {
-                nodes {
-                  oid,
-                  message
-                }
-              }
-            }
+const compareTags = async ({ client, owner, repo, currentTag, previousTag }) => {
+    const query = `
+query ($owner: String!, $repo: String!, $currentTag: String!, $previousTag: String!) {
+  repository(owner: $owner, name: $repo) {
+    ref(qualifiedName: $currentTag) {
+      compare(headRef: $previousTag) {
+        commits(first: 100) {
+          nodes {
+            oid,
+            message
           }
         }
       }
-    `, {
+    }
+  }
+}
+`;
+    return client(query, {
         owner,
         repo,
-        beforeTag: beforeTag,
-        lastTag: lastTag
+        currentTag,
+        previousTag
     });
 };
 exports["default"] = compareTags;
+
+
+/***/ }),
+
+/***/ 6508:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const createRelease = async ({ client, owner, repo, name, tagName, body, draft = true }) => {
+    return client.repos.createRelease({
+        owner,
+        repo,
+        tag_name: tagName,
+        body,
+        name,
+        draft
+    });
+};
+exports["default"] = createRelease;
 
 
 /***/ }),
@@ -29015,29 +29037,59 @@ exports["default"] = compareTags;
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
 const compareTags_1 = __importDefault(__nccwpck_require__(432));
 const findInvolvedCommits = async ({ client, owner, repo, currentTag, tagsList }) => {
     const beforeTag = tagsList.shift();
-    console.log('🚀 ~ currentTag:', currentTag);
-    console.log('🚀 ~ beforeTag:', beforeTag);
     if (beforeTag !== undefined) {
+        if (beforeTag === currentTag) {
+            return findInvolvedCommits({
+                client,
+                owner,
+                repo,
+                currentTag,
+                tagsList
+            });
+        }
         const tagsCompared = await (0, compareTags_1.default)({
             client,
             owner,
             repo,
-            beforeTag,
-            lastTag: currentTag
+            currentTag: beforeTag,
+            previousTag: currentTag
         });
         const { repository: { ref: { compare: { commits: { nodes: commits } } } } } = tagsCompared;
-        console.log('🚀 ~ commits:', commits);
+        core.debug(`🚀 ~ involved commits: ${commits}`);
         if (commits.length > 0) {
             return commits;
         }
-        console.log('🚀 ~ currentTag recursive:', currentTag);
         return findInvolvedCommits({
             client,
             owner,
@@ -29059,19 +29111,20 @@ exports["default"] = findInvolvedCommits;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const getLastTags = async ({ client, owner, repo, first }) => {
-    return client(`
-      query ($owner: String!, $repo: String!, $first: Int) {
-        repository(owner: $owner, name: $repo) {
-          refs(refPrefix: "refs/tags/", first: $first, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) {
-            edges {
-              node {
-                name
-              }
-            }
-          }
+    const query = `
+query ($owner: String!, $repo: String!, $first: Int) {
+  repository(owner: $owner, name: $repo) {
+    refs(refPrefix: "refs/tags/", first: $first, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) {
+      edges {
+        node {
+          name
         }
       }
-    `, {
+    }
+  }
+}
+`;
+    return client(query, {
         owner,
         repo,
         first
@@ -29087,35 +29140,51 @@ exports["default"] = getLastTags;
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.main = void 0;
-const core_1 = __importDefault(__nccwpck_require__(2186));
-const github_1 = __importDefault(__nccwpck_require__(5438));
+const core = __importStar(__nccwpck_require__(2186));
+const github = __importStar(__nccwpck_require__(5438));
 const getLastTags_1 = __importDefault(__nccwpck_require__(6283));
 const findInvolvedCommits_1 = __importDefault(__nccwpck_require__(2029));
+const createRelease_1 = __importDefault(__nccwpck_require__(6508));
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 async function main() {
-    const jiraProjectDomain = core_1.default.getInput('jira_project_domain');
-    console.log('🚀 ~ main ~ jiraProjectDomain:', jiraProjectDomain);
-    console.log('🚀 ~ main ~ github.context:', github_1.default.context);
-    const jiraProjectId = core_1.default.getInput('jira_project_id');
-    const jiraProjectKey = core_1.default.getInput('jira_project_key');
-    core_1.default.debug(`jiraProjectDomain: ${jiraProjectDomain}`);
-    core_1.default.debug(`jiraProjectId: ${jiraProjectId}`);
-    core_1.default.debug(`jiraProjectKey: ${jiraProjectKey}`);
+    const jiraProjectDomain = core.getInput('jira_project_domain');
+    const jiraProjectId = core.getInput('jira_project_id');
+    const jiraProjectKey = core.getInput('jira_project_key');
     const gitHubToken = process.env.GITHUB_TOKEN;
-    core_1.default.debug(`gitHubToken: ${gitHubToken}`);
-    const octokit = github_1.default.getOctokit(gitHubToken);
-    const { repo: { owner, repo }, ref } = github_1.default.context;
-    core_1.default.debug(`repo: ${repo}`);
-    core_1.default.debug(`owner: ${owner}`);
-    core_1.default.debug(`ref: ${ref}`);
+    const octokit = github.getOctokit(gitHubToken);
+    const { repo: { owner, repo }, ref } = github.context;
+    core.debug(`ref: ${ref}`);
     const graphqlClient = octokit.graphql.defaults({
         headers: {
             authorization: `token ${gitHubToken}`
@@ -29127,8 +29196,7 @@ async function main() {
         repo,
         first: 20
     });
-    core_1.default.debug(`tags  response: ${JSON.stringify(tagsResponse)}`);
-    core_1.default.debug(`tags: ${JSON.stringify(tagsResponse.repository.refs.edges)}`);
+    core.debug(`tags  response: ${JSON.stringify(tagsResponse)}`);
     const tagsList = tagsResponse.repository.refs.edges.map((edge) => edge.node.name);
     const involvedCommits = await (0, findInvolvedCommits_1.default)({
         client: graphqlClient,
@@ -29138,13 +29206,16 @@ async function main() {
         tagsList
     });
     console.log('🚀 ~ involvedCommits:', involvedCommits);
-    const createReleaseResponse = await octokit.rest.repos.createRelease({
+    const createReleaseResponse = await (0, createRelease_1.default)({
+        client: octokit.rest,
         owner,
         repo,
-        tag_name: ref
+        tagName: ref,
+        name: ref,
+        body: ''
     });
-    core_1.default.debug(`createReleaseResponse: ${JSON.stringify(createReleaseResponse)}`);
-    core_1.default.setOutput('Release url', createReleaseResponse.url);
+    core.debug(`createReleaseResponse: ${JSON.stringify(createReleaseResponse)}`);
+    core.setOutput('Release url', createReleaseResponse);
 }
 exports.main = main;
 exports["default"] = main;
