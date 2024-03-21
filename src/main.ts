@@ -10,9 +10,9 @@ import createRelease from './libs/create-release';
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 export async function main(): Promise<void> {
-  const jiraProjectDomain = core.getInput('jira_project_domain');
-  const jiraProjectId = core.getInput('jira_project_id');
-  const jiraProjectKey = core.getInput('jira_project_key');
+  // const jiraProjectDomain = core.getInput('jira_project_domain');
+  // const jiraProjectId = core.getInput('jira_project_id');
+  // const jiraProjectKey = core.getInput('jira_project_key');
 
   const gitHubToken = process.env.GITHUB_TOKEN as string;
 

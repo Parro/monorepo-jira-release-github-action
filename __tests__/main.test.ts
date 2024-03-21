@@ -13,9 +13,9 @@ describe('main tests', () => {
     process.env.GITHUB_TOKEN = 'abcd123';
 
     githubMocked.context.ref = '@first-package@0.3.0';
-    getInputMocked.mockImplementationOnce(() => 'domain');
-    getInputMocked.mockImplementationOnce(() => 'id');
-    getInputMocked.mockImplementationOnce(() => 'key');
+    // getInputMocked.mockImplementationOnce(() => 'domain');
+    // getInputMocked.mockImplementationOnce(() => 'id');
+    // getInputMocked.mockImplementationOnce(() => 'key');
     debugMocked.mockImplementationOnce(() => 'key');
 
     const graphqlClientMocked = jest.fn();
@@ -93,10 +93,10 @@ describe('main tests', () => {
 
     await main();
 
-    expect(getInputMocked).toBeCalledTimes(3);
-    expect(getInputMocked).toHaveBeenNthCalledWith(1, 'jira_project_domain');
-    expect(getInputMocked).toHaveBeenNthCalledWith(2, 'jira_project_id');
-    expect(getInputMocked).toHaveBeenNthCalledWith(3, 'jira_project_key');
+    // expect(getInputMocked).toBeCalledTimes(3);
+    // expect(getInputMocked).toHaveBeenNthCalledWith(1, 'jira_project_domain');
+    // expect(getInputMocked).toHaveBeenNthCalledWith(2, 'jira_project_id');
+    // expect(getInputMocked).toHaveBeenNthCalledWith(3, 'jira_project_key');
     expect(getOctokitMocked).toHaveBeenCalledWith('abcd123');
     expect(graphqlDefaultsMocked).toHaveBeenCalledWith({
       headers: {
