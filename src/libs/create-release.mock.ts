@@ -1,6 +1,6 @@
-import createRelease from '../../src/libs/create-release';
+import createRelease from './create-release';
 
-jest.mock('../../src/libs/create-release', () => ({
+jest.mock('./create-release', () => ({
   __esModule: true,
   default: jest.fn()
 }));

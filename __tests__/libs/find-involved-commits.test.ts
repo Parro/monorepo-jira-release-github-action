@@ -1,4 +1,4 @@
-import { compareTagsMocked } from '../__mocks__/compare-tags.mock';
+import { compareTagsMocked } from '../../src/libs/compare-tags.mock';
 
 import findInvolvedCommits from '../../src/libs/find-involved-commits';
 

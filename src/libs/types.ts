@@ -25,8 +25,8 @@ export type FindInvolvedCommits = (args: {
   owner: string;
   repo: string;
   currentTag: string;
-  tagsList: Array<string>;
-}) => Promise<Array<{ oid: string; message: string }>>;
+  tagsList: string[];
+}) => Promise<{ oid: string; message: string }[]>;
 
 export type GetLastTags = (args: {
   client: typeof graphql;

@@ -1,6 +1,6 @@
-import compareTags from '../../src/libs/compare-tags';
+import compareTags from './compare-tags';
 
-jest.mock('../../src/libs/compare-tags', () => ({
+jest.mock('./compare-tags', () => ({
   __esModule: true,
   default: jest.fn()
 }));

@@ -1,6 +1,6 @@
-import findInvolvedCommits from '../../src/libs/find-involved-commits';
+import findInvolvedCommits from './find-involved-commits';
 
-jest.mock('../../src/libs/find-involved-commits', () => ({
+jest.mock('./find-involved-commits', () => ({
   __esModule: true,
   default: jest.fn()
 }));
