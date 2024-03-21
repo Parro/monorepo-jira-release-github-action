@@ -28976,7 +28976,7 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 432:
+/***/ 3115:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -29011,7 +29011,7 @@ exports["default"] = compareTags;
 
 /***/ }),
 
-/***/ 6508:
+/***/ 4588:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -29032,7 +29032,7 @@ exports["default"] = createRelease;
 
 /***/ }),
 
-/***/ 2029:
+/***/ 6591:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -29065,7 +29065,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const compareTags_1 = __importDefault(__nccwpck_require__(432));
+const compare_tags_1 = __importDefault(__nccwpck_require__(3115));
 const findInvolvedCommits = async ({ client, owner, repo, currentTag, tagsList }) => {
     const beforeTag = tagsList.shift();
     if (beforeTag !== undefined) {
@@ -29078,7 +29078,7 @@ const findInvolvedCommits = async ({ client, owner, repo, currentTag, tagsList }
                 tagsList
             });
         }
-        const tagsCompared = await (0, compareTags_1.default)({
+        const tagsCompared = await (0, compare_tags_1.default)({
             client,
             owner,
             repo,
@@ -29104,7 +29104,7 @@ exports["default"] = findInvolvedCommits;
 
 /***/ }),
 
-/***/ 6283:
+/***/ 901:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -29170,17 +29170,17 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.main = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-const getLastTags_1 = __importDefault(__nccwpck_require__(6283));
-const findInvolvedCommits_1 = __importDefault(__nccwpck_require__(2029));
-const createRelease_1 = __importDefault(__nccwpck_require__(6508));
+const get_last_tags_1 = __importDefault(__nccwpck_require__(901));
+const find_involved_commits_1 = __importDefault(__nccwpck_require__(6591));
+const create_release_1 = __importDefault(__nccwpck_require__(4588));
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 async function main() {
-    const jiraProjectDomain = core.getInput('jira_project_domain');
-    const jiraProjectId = core.getInput('jira_project_id');
-    const jiraProjectKey = core.getInput('jira_project_key');
+    // const jiraProjectDomain = core.getInput('jira_project_domain');
+    // const jiraProjectId = core.getInput('jira_project_id');
+    // const jiraProjectKey = core.getInput('jira_project_key');
     const gitHubToken = process.env.GITHUB_TOKEN;
     const octokit = github.getOctokit(gitHubToken);
     const { repo: { owner, repo }, ref } = github.context;
@@ -29190,7 +29190,7 @@ async function main() {
             authorization: `token ${gitHubToken}`
         }
     });
-    const tagsResponse = await (0, getLastTags_1.default)({
+    const tagsResponse = await (0, get_last_tags_1.default)({
         client: graphqlClient,
         owner,
         repo,
@@ -29198,7 +29198,7 @@ async function main() {
     });
     core.debug(`tags  response: ${JSON.stringify(tagsResponse)}`);
     const tagsList = tagsResponse.repository.refs.edges.map((edge) => edge.node.name);
-    const involvedCommits = await (0, findInvolvedCommits_1.default)({
+    const involvedCommits = await (0, find_involved_commits_1.default)({
         client: graphqlClient,
         owner,
         repo,
@@ -29206,7 +29206,7 @@ async function main() {
         tagsList
     });
     console.log('🚀 ~ involvedCommits:', involvedCommits);
-    const createReleaseResponse = await (0, createRelease_1.default)({
+    const createReleaseResponse = await (0, create_release_1.default)({
         client: octokit.rest,
         owner,
         repo,
