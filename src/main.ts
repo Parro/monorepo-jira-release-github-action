@@ -5,6 +5,7 @@ import type { GraphQlQueryResponseData } from '@octokit/graphql';
 import getLastTags from './libs/getLastTags';
 import compareTags from './libs/compareTags';
 import findInvolvedCommits from './libs/findInvolvedCommits';
+import createRelease from './libs/createRelease';
 
 /**
  * The main function for the action.
@@ -60,10 +61,13 @@ const main = async () => {
   });
 
   console.log('🚀 ~ involvedCommits:', involvedCommits);
-  const createReleaseResponse = await octokit.rest.repos.createRelease({
+  const createReleaseResponse = await createRelease({
+    client: octokit.rest,
     owner,
     repo,
-    tag_name: ref
+    tagName: ref,
+    name: ref,
+    body: ''
   });
 
   core.debug(`createReleaseResponse: ${JSON.stringify(createReleaseResponse)}`);
