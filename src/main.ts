@@ -3,7 +3,6 @@ import * as github from '@actions/github';
 
 import type { GraphQlQueryResponseData } from '@octokit/graphql';
 import getLastTags from './libs/getLastTags';
-import compareTags from './libs/compareTags';
 import findInvolvedCommits from './libs/findInvolvedCommits';
 import createRelease from './libs/createRelease';
 
@@ -11,16 +10,12 @@ import createRelease from './libs/createRelease';
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
-const main = async () => {
+export async function main(): Promise<void> {
   const jiraProjectDomain = core.getInput('jira_project_domain');
   const jiraProjectId = core.getInput('jira_project_id');
   const jiraProjectKey = core.getInput('jira_project_key');
-  core.debug(`jiraProjectDomain: ${jiraProjectDomain}`);
-  core.debug(`jiraProjectId: ${jiraProjectId}`);
-  core.debug(`jiraProjectKey: ${jiraProjectKey}`);
 
   const gitHubToken = process.env.GITHUB_TOKEN as string;
-  core.debug(`gitHubToken: ${gitHubToken}`);
 
   const octokit = github.getOctokit(gitHubToken);
 
@@ -28,8 +23,6 @@ const main = async () => {
     repo: { owner, repo },
     ref
   } = github.context;
-  core.debug(`repo: ${repo}`);
-  core.debug(`owner: ${owner}`);
   core.debug(`ref: ${ref}`);
 
   const graphqlClient = octokit.graphql.defaults({
@@ -45,8 +38,7 @@ const main = async () => {
     first: 20
   });
 
-  core.debug(`tags response: ${JSON.stringify(tagsResponse)}`);
-  core.debug(`tags: ${JSON.stringify(tagsResponse.repository.refs.edges)}`);
+  core.debug(`tags  response: ${JSON.stringify(tagsResponse)}`);
 
   const tagsList = tagsResponse.repository.refs.edges.map(
     (edge: { node: { name: string } }) => edge.node.name
@@ -72,7 +64,7 @@ const main = async () => {
 
   core.debug(`createReleaseResponse: ${JSON.stringify(createReleaseResponse)}`);
 
-  core.setOutput('Release url', createReleaseResponse.url);
-};
+  core.setOutput('Release url', createReleaseResponse);
+}
 
 export default main;

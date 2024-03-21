@@ -1,3 +1,5 @@
+import * as core from '@actions/core';
+
 import compareTags from './compareTags';
 
 import type { FindInvolvedCommits } from './types';
@@ -10,16 +12,24 @@ const findInvolvedCommits: FindInvolvedCommits = async ({
   tagsList
 }) => {
   const beforeTag = tagsList.shift();
-  console.log('🚀 ~ currentTag:', currentTag);
-  console.log('🚀 ~ beforeTag:', beforeTag);
 
   if (beforeTag !== undefined) {
+    if (beforeTag === currentTag) {
+      return findInvolvedCommits({
+        client,
+        owner,
+        repo,
+        currentTag,
+        tagsList
+      });
+    }
+
     const tagsCompared = await compareTags({
       client,
       owner,
       repo,
-      beforeTag,
-      lastTag: currentTag
+      currentTag: beforeTag,
+      previousTag: currentTag
     });
 
     const {
@@ -32,12 +42,11 @@ const findInvolvedCommits: FindInvolvedCommits = async ({
       }
     } = tagsCompared;
 
-    console.log('🚀 ~ commits:', commits);
+    core.debug(`🚀 ~ involved commits: ${commits}`);
     if (commits.length > 0) {
       return commits;
     }
 
-    console.log('🚀 ~ currentTag recursive:', currentTag);
     return findInvolvedCommits({
       client,
       owner,
