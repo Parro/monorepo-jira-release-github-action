@@ -1,92 +1,135 @@
-/**
- * Unit tests for the action's main functionality, src/main.ts
- *
- * These should be run as if the action was called from a workflow.
- * Specifically, the inputs listed in `action.yml` should be set as environment
- * variables following the pattern `INPUT_<INPUT_NAME>`.
- */
+import { describe, expect, it } from '@jest/globals';
 
-import * as core from '@actions/core';
-import * as main from '../src/main';
+import { getInputMocked, debugMocked } from './__mocks__/core.mock';
+import { githubMocked, getOctokitMocked } from './__mocks__/github.mock';
+import { getLastTagsMocked } from './__mocks__/getLastTags.mock';
+import { findInvolvedCommitsMocked } from './__mocks__/findInvolvedCommits.mock';
+import { createReleaseMocked } from './__mocks__/createRelease.mock';
 
-// Mock the action's main function
-const runMock = jest.spyOn(main, 'run');
+import { main } from '../src/main';
 
-// Other utilities
-const timeRegex = /^\d{2}:\d{2}:\d{2}/;
+describe('main tests', () => {
+  it('should call the main script action', async () => {
+    process.env.GITHUB_TOKEN = 'abcd123';
 
-// Mock the GitHub Actions core library
-let debugMock: jest.SpiedFunction<typeof core.debug>;
-let errorMock: jest.SpiedFunction<typeof core.error>;
-let getInputMock: jest.SpiedFunction<typeof core.getInput>;
-let setFailedMock: jest.SpiedFunction<typeof core.setFailed>;
-let setOutputMock: jest.SpiedFunction<typeof core.setOutput>;
+    githubMocked.context.ref = '@first-package@0.3.0';
+    getInputMocked.mockImplementationOnce(() => 'domain');
+    getInputMocked.mockImplementationOnce(() => 'id');
+    getInputMocked.mockImplementationOnce(() => 'key');
+    debugMocked.mockImplementationOnce(() => 'key');
 
-describe('action', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-
-    debugMock = jest.spyOn(core, 'debug').mockImplementation();
-    errorMock = jest.spyOn(core, 'error').mockImplementation();
-    getInputMock = jest.spyOn(core, 'getInput').mockImplementation();
-    setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation();
-    setOutputMock = jest.spyOn(core, 'setOutput').mockImplementation();
-  });
-
-  it('sets the time output', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation((name) => {
-      switch (name) {
-        case 'milliseconds':
-          return '500';
-        default:
-          return '';
+    const graphqlClientMocked = jest.fn();
+    const restClientMocked = jest.fn();
+    const graphqlDefaultsMocked = jest.fn(() => graphqlClientMocked);
+    (getOctokitMocked as jest.Mock).mockImplementationOnce(() => ({
+      graphql: {
+        defaults: graphqlDefaultsMocked
+      },
+      rest: restClientMocked
+    }));
+    getLastTagsMocked.mockResolvedValueOnce({
+      repository: {
+        refs: {
+          edges: [
+            { node: { name: '@second-package@0.3.0' } },
+            { node: { name: '@first-package@0.3.0' } },
+            { node: { name: '@second-package@0.2.0' } },
+            { node: { name: '@second-package@0.1.0' } },
+            { node: { name: '@first-package@0.2.0' } },
+            { node: { name: '@first-package@0.1.0' } }
+          ]
+        }
+      }
+    });
+    findInvolvedCommitsMocked.mockResolvedValueOnce([
+      {
+        oid: '3b34067b66a550f8c536fda2825c8103f8cbc0bb',
+        message: 'Last commit'
+      }
+    ]);
+    createReleaseMocked.mockResolvedValueOnce({
+      headers: {},
+      status: 201,
+      url: '',
+      data: {
+        url: '',
+        html_url: 'string',
+        assets_url: 'string',
+        upload_url: 'string',
+        tarball_url: 'string | null',
+        zipball_url: 'string | null',
+        id: 1,
+        node_id: '',
+        tag_name: '',
+        target_commitish: 'string',
+        name: '',
+        draft: true,
+        prerelease: true,
+        created_at: '',
+        published_at: '',
+        author: {
+          login: 'string',
+          id: 1,
+          node_id: 'string',
+          avatar_url: 'string',
+          gravatar_id: 'string',
+          url: 'string',
+          html_url: 'string',
+          followers_url: 'string',
+          following_url: 'string',
+          gists_url: 'string',
+          starred_url: 'string',
+          subscriptions_url: 'string',
+          organizations_url: 'string',
+          repos_url: 'string',
+          events_url: 'string',
+          received_events_url: 'string',
+          type: 'string',
+          site_admin: false
+        },
+        assets: []
       }
     });
 
-    await main.run();
-    expect(runMock).toHaveReturned();
+    await main();
 
-    // Verify that all of the core library functions were called correctly
-    expect(debugMock).toHaveBeenNthCalledWith(
-      1,
-      'Waiting 500 milliseconds ...'
-    );
-    expect(debugMock).toHaveBeenNthCalledWith(
-      2,
-      expect.stringMatching(timeRegex)
-    );
-    expect(debugMock).toHaveBeenNthCalledWith(
-      3,
-      expect.stringMatching(timeRegex)
-    );
-    expect(setOutputMock).toHaveBeenNthCalledWith(
-      1,
-      'time',
-      expect.stringMatching(timeRegex)
-    );
-    expect(errorMock).not.toHaveBeenCalled();
-  });
-
-  it('sets a failed status', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation((name) => {
-      switch (name) {
-        case 'milliseconds':
-          return 'this is not a number';
-        default:
-          return '';
+    expect(getInputMocked).toBeCalledTimes(3);
+    expect(getInputMocked).toHaveBeenNthCalledWith(1, 'jira_project_domain');
+    expect(getInputMocked).toHaveBeenNthCalledWith(2, 'jira_project_id');
+    expect(getInputMocked).toHaveBeenNthCalledWith(3, 'jira_project_key');
+    expect(getOctokitMocked).toHaveBeenCalledWith('abcd123');
+    expect(graphqlDefaultsMocked).toHaveBeenCalledWith({
+      headers: {
+        authorization: 'token abcd123'
       }
     });
-
-    await main.run();
-    expect(runMock).toHaveReturned();
-
-    // Verify that all of the core library functions were called correctly
-    expect(setFailedMock).toHaveBeenNthCalledWith(
-      1,
-      'milliseconds not a number'
-    );
-    expect(errorMock).not.toHaveBeenCalled();
+    expect(getLastTagsMocked).toHaveBeenCalledWith({
+      client: graphqlClientMocked,
+      first: 20,
+      owner: 'owner',
+      repo: 'repo'
+    });
+    expect(findInvolvedCommitsMocked).toHaveBeenCalledWith({
+      client: graphqlClientMocked,
+      owner: 'owner',
+      repo: 'repo',
+      currentTag: '@first-package@0.3.0',
+      tagsList: [
+        '@second-package@0.3.0',
+        '@first-package@0.3.0',
+        '@second-package@0.2.0',
+        '@second-package@0.1.0',
+        '@first-package@0.2.0',
+        '@first-package@0.1.0'
+      ]
+    });
+    expect(createReleaseMocked).toHaveBeenCalledWith({
+      client: restClientMocked,
+      owner: 'owner',
+      repo: 'repo',
+      name: '@first-package@0.3.0',
+      tagName: '@first-package@0.3.0',
+      body: ''
+    });
   });
 });
