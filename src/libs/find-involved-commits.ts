@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 
-import compareTags from './compareTags';
+import compareTags from './compare-tags';
 
 import type { FindInvolvedCommits } from './types';
 

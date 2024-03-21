@@ -1,6 +1,6 @@
-import { compareTagsMocked } from '../__mocks__/compareTags.mock';
+import { compareTagsMocked } from '../__mocks__/compare-tags.mock';
 
-import findInvolvedCommits from '../../src/libs/findInvolvedCommits';
+import findInvolvedCommits from '../../src/libs/find-involved-commits';
 
 import type { graphql } from '@octokit/graphql';
 

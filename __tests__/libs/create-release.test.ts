@@ -1,4 +1,4 @@
-import createRelease from '../../src/libs/createRelease';
+import createRelease from '../../src/libs/create-release';
 
 import type { Api } from '@octokit/plugin-rest-endpoint-methods/dist-types/types';
 

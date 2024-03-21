@@ -1,10 +1,9 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 
-import type { GraphQlQueryResponseData } from '@octokit/graphql';
-import getLastTags from './libs/getLastTags';
-import findInvolvedCommits from './libs/findInvolvedCommits';
-import createRelease from './libs/createRelease';
+import getLastTags from './libs/get-last-tags';
+import findInvolvedCommits from './libs/find-involved-commits';
+import createRelease from './libs/create-release';
 
 /**
  * The main function for the action.

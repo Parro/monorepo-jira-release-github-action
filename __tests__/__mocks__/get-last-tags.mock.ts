@@ -1,6 +1,6 @@
-import getLastTags from '../../src/libs/getLastTags';
+import getLastTags from '../../src/libs/get-last-tags';
 
-jest.mock('../../src/libs/getLastTags', () => ({
+jest.mock('../../src/libs/get-last-tags', () => ({
   __esModule: true,
   default: jest.fn()
 }));

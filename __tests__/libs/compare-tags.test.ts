@@ -1,4 +1,4 @@
-import compareTags from '../../src/libs/compareTags';
+import compareTags from '../../src/libs/compare-tags';
 
 import type { graphql } from '@octokit/graphql';
 

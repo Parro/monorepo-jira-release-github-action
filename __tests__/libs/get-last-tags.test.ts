@@ -1,4 +1,4 @@
-import getLastTags from '../../src/libs/getLastTags';
+import getLastTags from '../../src/libs/get-last-tags';
 
 import { graphql } from '@octokit/graphql';
 

@@ -2,9 +2,9 @@ import { describe, expect, it } from '@jest/globals';
 
 import { getInputMocked, debugMocked } from './__mocks__/core.mock';
 import { githubMocked, getOctokitMocked } from './__mocks__/github.mock';
-import { getLastTagsMocked } from './__mocks__/getLastTags.mock';
-import { findInvolvedCommitsMocked } from './__mocks__/findInvolvedCommits.mock';
-import { createReleaseMocked } from './__mocks__/createRelease.mock';
+import { getLastTagsMocked } from './__mocks__/get-last-tags.mock';
+import { findInvolvedCommitsMocked } from './__mocks__/find-involved-commits.mock';
+import { createReleaseMocked } from './__mocks__/create-release.mock';
 
 import { main } from '../src/main';
 
