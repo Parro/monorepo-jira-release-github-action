@@ -60,6 +60,6 @@ jobs:
           jira_project_key: ''
 
 
-      - name: Print Output
-        id: output
-        run: echo "${{ steps.test-action.outputs.time }}"
+      # - name: Print Output
+      #   id: output
+      #   run: echo "${{ steps.test-action.outputs.time }}"
