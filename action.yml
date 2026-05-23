@@ -20,10 +20,10 @@ inputs:
     description: 'Jira issue key prefix'
     required: true
 
-# Define your outputs here.
-outputs:
-  time:
-    description: 'Your output description here'
+# # Define your outputs here.
+# outputs:
+#   time:
+#     description: 'Your output description here'
 
 runs:
   using: node20
