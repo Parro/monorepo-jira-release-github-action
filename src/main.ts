@@ -1,5 +1,5 @@
-import * as core from '@actions/core';
-import * as github from '@actions/github';
+import { debug, setOutput } from '@actions/core';
+import { getOctokit,context } from '@actions/github'; 
 
 import getLastTags from './libs/get-last-tags';
 import findInvolvedCommits from './libs/find-involved-commits';
@@ -16,13 +16,13 @@ export async function main(): Promise<void> {
 
   const gitHubToken = process.env.GITHUB_TOKEN as string;
 
-  const octokit = github.getOctokit(gitHubToken);
+  const octokit = getOctokit(gitHubToken);
 
   const {
     repo: { owner, repo },
     ref
-  } = github.context;
-  core.debug(`ref: ${ref}`);
+  } = context;
+  debug(`ref: ${ref}`);
 
   const graphqlClient = octokit.graphql.defaults({
     headers: {
@@ -37,7 +37,7 @@ export async function main(): Promise<void> {
     first: 20
   });
 
-  core.debug(`tags  response: ${JSON.stringify(tagsResponse)}`);
+  debug(`tags  response: ${JSON.stringify(tagsResponse)}`);
 
   const tagsList = tagsResponse.repository.refs.edges.map(
     (edge: { node: { name: string } }) => edge.node.name
@@ -61,9 +61,9 @@ export async function main(): Promise<void> {
     body: ''
   });
 
-  core.debug(`createReleaseResponse: ${JSON.stringify(createReleaseResponse)}`);
+  debug(`createReleaseResponse: ${JSON.stringify(createReleaseResponse)}`);
 
-  core.setOutput('Release url', createReleaseResponse);
+  setOutput('Release url', createReleaseResponse);
 }
 
 export default main;
