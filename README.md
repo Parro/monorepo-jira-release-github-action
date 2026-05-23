@@ -1,4 +1,4 @@
-# Jira release GitHub action
+# Jira release GitHub Action
 
 _... that works with monorepo_
 
