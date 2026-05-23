@@ -1,10 +1,10 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { debugMocked } from './external/core.mock';
-import { githubMocked, getOctokitMocked } from './external/github.mock';
-import { getLastTagsMocked } from '../src/libs/get-last-tags.mock';
-import { findInvolvedCommitsMocked } from '../src/libs/find-involved-commits.mock';
-import { createReleaseMocked } from '../src/libs/create-release.mock';
+import { debugMocked } from './__mocks__/external/core.mock';
+import { githubMocked, getOctokitMocked } from './__mocks__/external/github.mock';
+import { getLastTagsMocked } from './__mocks__/libs/get-last-tags.mock';
+import { findInvolvedCommitsMocked } from './__mocks__/libs/find-involved-commits.mock';
+import { createReleaseMocked } from './__mocks__/libs/create-release.mock';
 
 import { main } from '../src/main';
 
