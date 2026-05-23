@@ -36,12 +36,21 @@ extends:
 
 rules:
   {
-    'camelcase': 
-    ['error', { 'ignoreDestructuring': true}],
+    'camelcase':
+      [
+        'error',
+        {
+          'properties': 'never',
+          'ignoreDestructuring': false,
+          'ignoreImports': false,
+          'ignoreGlobals': false
+        }
+      ],
     'eslint-comments/no-use': 'off',
     'eslint-comments/no-unused-disable': 'off',
     'i18n-text/no-en': 'off',
     'import/no-namespace': 'off',
+    'jest/no-mocks-import': 'off',
     'no-console': 'off',
     'prettier/prettier': 'error',
     '@typescript-eslint/array-type': 'error',

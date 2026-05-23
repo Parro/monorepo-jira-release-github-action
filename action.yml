@@ -1,5 +1,6 @@
 name: 'Jira release GitHub action for monorepo'
-description: 'GitHub action that creates a Jira and Github release whenever a tag is pushed'
+description:
+  'GitHub action that creates a Jira and Github release whenever a tag is pushed'
 author: 'Parro<parrok@gmail.com>'
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
@@ -19,10 +20,10 @@ inputs:
     description: 'Jira issue key prefix'
     required: true
 
-# Define your outputs here.
-outputs:
-  time:
-    description: 'Your output description here'
+# # Define your outputs here.
+# outputs:
+#   time:
+#     description: 'Your output description here'
 
 runs:
   using: node20
