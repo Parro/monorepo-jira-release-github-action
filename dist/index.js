@@ -29937,7 +29937,9 @@ query ($owner: String!, $repo: String!, $currentTag: String!, $previousTag: Stri
         commits(first: 100) {
           nodes {
             oid,
-            message
+            message,
+            messageHeadline,
+            messageBody,
           }
         }
       }
@@ -29953,27 +29955,6 @@ query ($owner: String!, $repo: String!, $currentTag: String!, $previousTag: Stri
     });
 };
 exports["default"] = compareTags;
-
-
-/***/ }),
-
-/***/ 4588:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const createRelease = async ({ client, owner, repo, name, tagName, body, draft = true }) => {
-    return client.repos.createRelease({
-        owner,
-        repo,
-        tag_name: tagName,
-        body,
-        name,
-        draft
-    });
-};
-exports["default"] = createRelease;
 
 
 /***/ }),
@@ -30118,7 +30099,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const get_last_tags_1 = __importDefault(__nccwpck_require__(901));
 const find_involved_commits_1 = __importDefault(__nccwpck_require__(6591));
-const create_release_1 = __importDefault(__nccwpck_require__(4588));
+// import createRelease from './libs/create-release';
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -30152,16 +30133,16 @@ async function main() {
         tagsList
     });
     core.debug(`involvedCommits: ${JSON.stringify(involvedCommits)}`);
-    const createReleaseResponse = await (0, create_release_1.default)({
-        client: octokit.rest,
-        owner,
-        repo,
-        tagName: ref,
-        name: ref,
-        body: ''
-    });
-    core.debug(`createReleaseResponse: ${JSON.stringify(createReleaseResponse)}`);
-    core.setOutput('Release url', createReleaseResponse);
+    // const createReleaseResponse = await createRelease({
+    //   client: octokit.rest,
+    //   owner,
+    //   repo,
+    //   tagName: ref,
+    //   name: ref,
+    //   body: ''
+    // });
+    // core.debug(`createReleaseResponse: ${JSON.stringify(createReleaseResponse)}`);
+    // core.setOutput('Release url', createReleaseResponse);
 }
 exports.main = main;
 exports["default"] = main;
