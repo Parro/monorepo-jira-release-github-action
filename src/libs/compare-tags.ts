@@ -15,7 +15,9 @@ query ($owner: String!, $repo: String!, $currentTag: String!, $previousTag: Stri
         commits(first: 100) {
           nodes {
             oid,
-            message
+            message,
+            messageHeadline,
+            messageBody,
           }
         }
       }

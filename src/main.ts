@@ -3,7 +3,7 @@ import * as github from '@actions/github';
 
 import getLastTags from './libs/get-last-tags';
 import findInvolvedCommits from './libs/find-involved-commits';
-import createRelease from './libs/create-release';
+// import createRelease from './libs/create-release';
 
 /**
  * The main function for the action.
@@ -52,18 +52,18 @@ export async function main(): Promise<void> {
   });
 
   core.debug(`involvedCommits: ${JSON.stringify(involvedCommits)}`);
-  const createReleaseResponse = await createRelease({
-    client: octokit.rest,
-    owner,
-    repo,
-    tagName: ref,
-    name: ref,
-    body: ''
-  });
+  // const createReleaseResponse = await createRelease({
+  //   client: octokit.rest,
+  //   owner,
+  //   repo,
+  //   tagName: ref,
+  //   name: ref,
+  //   body: ''
+  // });
 
-  core.debug(`createReleaseResponse: ${JSON.stringify(createReleaseResponse)}`);
+  // core.debug(`createReleaseResponse: ${JSON.stringify(createReleaseResponse)}`);
 
-  core.setOutput('Release url', createReleaseResponse);
+  // core.setOutput('Release url', createReleaseResponse);
 }
 
 export default main;
