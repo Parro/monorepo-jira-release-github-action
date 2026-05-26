@@ -1,4 +1,4 @@
-import { debug } from '@actions/core';
+import * as core from '@actions/core';
 
 import compareTags from './compare-tags';
 
@@ -42,7 +42,7 @@ const findInvolvedCommits: FindInvolvedCommits = async ({
       }
     } = tagsCompared;
 
-    debug(`🚀 ~ involved commits: ${commits}`);
+    core.debug(`🚀 ~ involved commits: ${commits}`);
     if (commits.length > 0) {
       return commits;
     }
