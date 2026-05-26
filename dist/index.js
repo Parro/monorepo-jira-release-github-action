@@ -30151,7 +30151,7 @@ async function main() {
         currentTag: ref,
         tagsList
     });
-    console.log('🚀 ~ involvedCommits:', involvedCommits);
+    core.debug(`involvedCommits: ${JSON.stringify(involvedCommits)}`);
     const createReleaseResponse = await (0, create_release_1.default)({
         client: octokit.rest,
         owner,
