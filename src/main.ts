@@ -51,7 +51,7 @@ export async function main(): Promise<void> {
     tagsList
   });
 
-  console.log('🚀 ~ involvedCommits:', involvedCommits);
+  core.debug(`involvedCommits: ${JSON.stringify(involvedCommits)}`);
   const createReleaseResponse = await createRelease({
     client: octokit.rest,
     owner,
