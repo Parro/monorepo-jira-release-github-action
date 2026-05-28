@@ -37,7 +37,7 @@ export async function run(): Promise<void> {
   });
 
   core.debug(`tags  response: ${JSON.stringify(tagsResponse)}`);
-  
+
   const tagsList = tagsResponse.repository.refs.edges.map(
     (edge: { node: { name: string } }) => edge.node.name
   );
