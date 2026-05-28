@@ -9,12 +9,11 @@ import findInvolvedCommits from './libs/find-involved-commits';
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
-export async function main(): Promise<void> {
+export async function run(): Promise<void> {
   // const jiraProjectDomain = core.getInput('jira_project_domain');
   // const jiraProjectId = core.getInput('jira_project_id');
   // const jiraProjectKey = core.getInput('jira_project_key');
-
-  const gitHubToken = process.env.GITHUB_TOKEN as string;
+  const gitHubToken = core.getInput('github-token');
 
   const octokit = github.getOctokit(gitHubToken);
 
@@ -38,10 +37,11 @@ export async function main(): Promise<void> {
   });
 
   core.debug(`tags  response: ${JSON.stringify(tagsResponse)}`);
-
+  
   const tagsList = tagsResponse.repository.refs.edges.map(
     (edge: { node: { name: string } }) => edge.node.name
   );
+  core.debug(`tagsList: ${JSON.stringify(tagsList)}`);
 
   const involvedCommits = await findInvolvedCommits({
     client: graphqlClient,
@@ -66,4 +66,4 @@ export async function main(): Promise<void> {
   // core.setOutput('Release url', createReleaseResponse);
 }
 
-export default main;
+export default run;
