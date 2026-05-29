@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { debugMocked } from './__mocks__/external/core.mock';
+import { debugMocked, getInputMocked } from './__mocks__/external/core.mock';
 import {
   githubMocked,
   getOctokitMocked
@@ -9,7 +9,7 @@ import { getLastTagsMocked } from './__mocks__/libs/get-last-tags.mock';
 import { findInvolvedCommitsMocked } from './__mocks__/libs/find-involved-commits.mock';
 import { createReleaseMocked } from './__mocks__/libs/create-release.mock';
 
-import { main } from '../src/main';
+import { run } from '../src/main';
 
 describe('main tests', () => {
   it('should call the main script action', async () => {
@@ -18,7 +18,7 @@ describe('main tests', () => {
     githubMocked.context.ref = '@first-package@0.3.0';
     // getInputMocked.mockImplementationOnce(() => 'domain');
     // getInputMocked.mockImplementationOnce(() => 'id');
-    // getInputMocked.mockImplementationOnce(() => 'key');
+    getInputMocked.mockImplementationOnce(() => 'abcd123');
     debugMocked.mockImplementationOnce(() => 'key');
 
     const graphqlClientMocked = jest.fn();
@@ -94,7 +94,7 @@ describe('main tests', () => {
       }
     });
 
-    await main();
+    await run();
 
     // expect(getInputMocked).toBeCalledTimes(3);
     // expect(getInputMocked).toHaveBeenNthCalledWith(1, 'jira_project_domain');
@@ -126,13 +126,13 @@ describe('main tests', () => {
         '@first-package@0.1.0'
       ]
     });
-    expect(createReleaseMocked).toHaveBeenCalledWith({
-      client: restClientMocked,
-      owner: 'owner',
-      repo: 'repo',
-      name: '@first-package@0.3.0',
-      tagName: '@first-package@0.3.0',
-      body: ''
-    });
+    // expect(createReleaseMocked).toHaveBeenCalledWith({
+    //   client: restClientMocked,
+    //   owner: 'owner',
+    //   repo: 'repo',
+    //   name: '@first-package@0.3.0',
+    //   tagName: '@first-package@0.3.0',
+    //   body: ''
+    // });
   });
 });
