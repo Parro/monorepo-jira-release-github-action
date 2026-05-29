@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { jest, describe, expect, it } from '@jest/globals';
 
 import { debugMocked, getInputMocked } from './__mocks__/external/core.mock';
 import {

@@ -1,3 +1,5 @@
+import { jest } from '@jest/globals';
+
 import findInvolvedCommits from '../../../src/libs/find-involved-commits';
 
 jest.mock('../../../src/libs/find-involved-commits', () => ({

@@ -1,3 +1,5 @@
+import { jest } from '@jest/globals';
+
 import compareTags from '../../../src/libs/compare-tags';
 
 jest.mock('../../../src/libs/compare-tags', () => ({

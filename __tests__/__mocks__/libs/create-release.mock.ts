@@ -1,3 +1,5 @@
+import { jest } from '@jest/globals';
+
 import createRelease from '../../../src/libs/create-release';
 
 jest.mock('../../../src/libs/create-release', () => ({

@@ -1,3 +1,5 @@
+import { jest, describe, it, expect } from '@jest/globals';
+
 import compareTags from '../../src/libs/compare-tags';
 
 import type { graphql } from '@octokit/graphql';
