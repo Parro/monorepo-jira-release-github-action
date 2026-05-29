@@ -46,7 +46,8 @@ variables in
 
 in particular:
 
-- `INPUT_GITHUB-TOKEN` with a valid GitHub token that has access to the repository
+- `INPUT_GITHUB-TOKEN` with a valid GitHub token that has access to the
+  repository
 - `GITHUB_REF` e `GITHUB_REF_NAME` with the reference to the las tag
 - `GITHUB_REF_TYPE` with `tag`
 - `GITHUB_REPOSITORY` and `GITHUB_REPOSITORY_OWNER` with the test repository
