@@ -15,7 +15,9 @@ released simultaneously.
 
 Then:
 
-- It extracts the task number from the merged Pull Requests, (commit must follow
+- Get the involved commits between the tag and the previous one (could not be
+  the same package, tre previous is sense of time)
+- Extracts the task number from the merged Pull Requests, (commit must follow
   `commitlint` format `XX-000`)
 - Create a Jira release with the name of the tag
 - Add the created release as the Fix version of the task numbers found in the
