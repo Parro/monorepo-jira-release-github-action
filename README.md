@@ -28,11 +28,11 @@ Then:
 - Create a GitHub release with the Jira release notes and the GitHub generated
   notes
 
-# How to test locally
+## How to test locally
 
 Use
 
-```
+```text
 npm run local-test
 ```
 
@@ -40,7 +40,7 @@ to test the action locally with the package
 [Local Action Debugger](https://github.com/github/local-action). Set the
 variables in
 
-```
+```text
 .local.action.env
 ```
 
