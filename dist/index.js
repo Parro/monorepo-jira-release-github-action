@@ -30004,6 +30004,36 @@ exports["default"] = findInvolvedCommits;
 
 /***/ }),
 
+/***/ 4106:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const getCommitsMessage = ({ jiraProjectKey, commits }) => {
+    const response = commits.reduce((acc, commit) => {
+        const matches = commit.message.match(new RegExp(`(?<task>${jiraProjectKey}-[0-9]+) (?<action>.*): (?<description>.*)`));
+        if (matches === null) {
+            return acc;
+        }
+        const task = matches.groups?.task;
+        const description = matches.groups?.description;
+        if (task !== undefined && acc.tasks.includes(task) === false) {
+            acc.tasks.push(task);
+        }
+        if (description !== undefined &&
+            acc.descriptions.includes(description) === false) {
+            acc.descriptions.push(description);
+        }
+        return acc;
+    }, { tasks: [], descriptions: [] });
+    return response;
+};
+exports["default"] = getCommitsMessage;
+
+
+/***/ }),
+
 /***/ 901:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -30082,6 +30112,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const get_last_tags_1 = __importDefault(__nccwpck_require__(901));
 const find_involved_commits_1 = __importDefault(__nccwpck_require__(6591));
+const get_commits_message_1 = __importDefault(__nccwpck_require__(4106));
 // import createRelease from './libs/create-release';
 /**
  * The main function for the action.
@@ -30090,8 +30121,9 @@ const find_involved_commits_1 = __importDefault(__nccwpck_require__(6591));
 async function run() {
     // const jiraProjectDomain = core.getInput('jira_project_domain');
     // const jiraProjectId = core.getInput('jira_project_id');
-    // const jiraProjectKey = core.getInput('jira_project_key');
+    const jiraProjectKey = core.getInput('jira_project_key');
     const gitHubToken = core.getInput('github-token');
+    core.debug(`jiraProjectKey: ${jiraProjectKey}`);
     const octokit = github.getOctokit(gitHubToken);
     const { repo: { owner, repo }, ref } = github.context;
     core.debug(`ref: ${ref}`);
@@ -30117,6 +30149,11 @@ async function run() {
         tagsList
     });
     core.debug(`involvedCommits: ${JSON.stringify(involvedCommits)}`);
+    const taskMessages = (0, get_commits_message_1.default)({
+        jiraProjectKey,
+        commits: involvedCommits
+    });
+    core.debug(`taskMessages: ${JSON.stringify(taskMessages)}`);
     // const createReleaseResponse = await createRelease({
     //   client: octokit.rest,
     //   owner,
