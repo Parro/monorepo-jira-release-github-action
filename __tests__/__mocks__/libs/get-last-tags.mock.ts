@@ -1,3 +1,5 @@
+import { jest } from '@jest/globals';
+
 import getLastTags from '../../../src/libs/get-last-tags';
 
 jest.mock('../../../src/libs/get-last-tags', () => ({

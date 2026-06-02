@@ -1,3 +1,5 @@
+import { jest, describe, it, expect } from '@jest/globals';
+
 import { compareTagsMocked } from '../__mocks__/libs/compare-tags.mock';
 
 import findInvolvedCommits from '../../src/libs/find-involved-commits';

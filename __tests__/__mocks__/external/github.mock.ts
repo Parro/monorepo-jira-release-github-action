@@ -1,3 +1,5 @@
+import { jest } from '@jest/globals';
+
 import * as github from '@actions/github';
 
 jest.mock('@actions/github', () => ({

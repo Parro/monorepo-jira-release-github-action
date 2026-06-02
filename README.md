@@ -15,7 +15,9 @@ released simultaneously.
 
 Then:
 
-- It extracts the task number from the merged Pull Requests, (commit must follow
+- Get the involved commits between the tag and the previous one (could not be
+  the same package, tre previous is sense of time)
+- Extracts the task number from the merged Pull Requests, (commit must follow
   `commitlint` format `XX-000`)
 - Create a Jira release with the name of the tag
 - Add the created release as the Fix version of the task numbers found in the
@@ -25,3 +27,27 @@ Then:
 - Generate the release nots in GitHub
 - Create a GitHub release with the Jira release notes and the GitHub generated
   notes
+
+## How to test locally
+
+Use
+
+```text
+npm run local-test
+```
+
+to test the action locally with the package
+[Local Action Debugger](https://github.com/github/local-action). Set the
+variables in
+
+```text
+.local.action.env
+```
+
+in particular:
+
+- `INPUT_GITHUB-TOKEN` with a valid GitHub token that has access to the
+  repository
+- `GITHUB_REF` e `GITHUB_REF_NAME` with the reference to the las tag
+- `GITHUB_REF_TYPE` with `tag`
+- `GITHUB_REPOSITORY` and `GITHUB_REPOSITORY_OWNER` with the test repository

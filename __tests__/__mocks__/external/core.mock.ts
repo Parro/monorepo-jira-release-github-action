@@ -1,3 +1,5 @@
+import { jest } from '@jest/globals';
+
 import * as core from '@actions/core';
 
 jest.mock('@actions/core', () => ({

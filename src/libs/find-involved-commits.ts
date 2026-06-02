@@ -1,5 +1,3 @@
-import * as core from '@actions/core';
-
 import compareTags from './compare-tags';
 
 import type { FindInvolvedCommits } from './types';
@@ -42,7 +40,6 @@ const findInvolvedCommits: FindInvolvedCommits = async ({
       }
     } = tagsCompared;
 
-    core.debug(`🚀 ~ involved commits: ${commits}`);
     if (commits.length > 0) {
       return commits;
     }
