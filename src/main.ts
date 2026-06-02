@@ -3,6 +3,7 @@ import * as github from '@actions/github';
 
 import getLastTags from './libs/get-last-tags';
 import findInvolvedCommits from './libs/find-involved-commits';
+import getCommitsMessage from './libs/get-commits-message';
 // import createRelease from './libs/create-release';
 
 /**
@@ -12,9 +13,10 @@ import findInvolvedCommits from './libs/find-involved-commits';
 export async function run(): Promise<void> {
   // const jiraProjectDomain = core.getInput('jira_project_domain');
   // const jiraProjectId = core.getInput('jira_project_id');
-  // const jiraProjectKey = core.getInput('jira_project_key');
+  const jiraProjectKey = core.getInput('jira_project_key');
   const gitHubToken = core.getInput('github-token');
 
+  core.debug(`jiraProjectKey: ${jiraProjectKey}`);
   const octokit = github.getOctokit(gitHubToken);
 
   const {
@@ -52,6 +54,13 @@ export async function run(): Promise<void> {
   });
 
   core.debug(`involvedCommits: ${JSON.stringify(involvedCommits)}`);
+
+  const taskMessages = getCommitsMessage({
+    jiraProjectKey,
+    commits: involvedCommits
+  });
+
+  core.debug(`taskMessages: ${JSON.stringify(taskMessages)}`);
   // const createReleaseResponse = await createRelease({
   //   client: octokit.rest,
   //   owner,

@@ -18,6 +18,7 @@ describe('main tests', () => {
     githubMocked.context.ref = '@first-package@0.3.0';
     // getInputMocked.mockImplementationOnce(() => 'domain');
     // getInputMocked.mockImplementationOnce(() => 'id');
+    getInputMocked.mockImplementationOnce(() => 'AT');
     getInputMocked.mockImplementationOnce(() => 'abcd123');
     debugMocked.mockImplementationOnce(() => 'key');
 
@@ -96,10 +97,11 @@ describe('main tests', () => {
 
     await run();
 
-    // expect(getInputMocked).toBeCalledTimes(3);
+    expect(getInputMocked).toBeCalledTimes(2);
     // expect(getInputMocked).toHaveBeenNthCalledWith(1, 'jira_project_domain');
     // expect(getInputMocked).toHaveBeenNthCalledWith(2, 'jira_project_id');
-    // expect(getInputMocked).toHaveBeenNthCalledWith(3, 'jira_project_key');
+    expect(getInputMocked).toHaveBeenNthCalledWith(1, 'jira_project_key');
+    expect(getInputMocked).toHaveBeenNthCalledWith(2, 'github-token');
     expect(getOctokitMocked).toHaveBeenCalledWith('abcd123');
     expect(graphqlDefaultsMocked).toHaveBeenCalledWith({
       headers: {

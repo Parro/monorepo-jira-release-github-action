@@ -2,6 +2,8 @@ import type { graphql, GraphQlQueryResponseData } from '@octokit/graphql';
 import type { Api } from '@octokit/plugin-rest-endpoint-methods/dist-types/types';
 import type { Endpoints } from '@octokit/types';
 
+export type Commit = { oid: string; message: string };
+
 export type CompareTags = (args: {
   client: typeof graphql;
   owner: string;
@@ -26,7 +28,12 @@ export type FindInvolvedCommits = (args: {
   repo: string;
   currentTag: string;
   tagsList: string[];
-}) => Promise<{ oid: string; message: string }[]>;
+}) => Promise<Commit[]>;
+
+export type GetCommitsMessage = (args: {
+  jiraProjectKey: string;
+  commits: Commit[];
+}) => { tasks: string[]; descriptions: string[] };
 
 export type GetLastTags = (args: {
   client: typeof graphql;
@@ -34,3 +41,9 @@ export type GetLastTags = (args: {
   repo: string;
   first: number;
 }) => Promise<GraphQlQueryResponseData>;
+
+export type RegExpGroups<T extends string[]> =
+  | (RegExpMatchArray & {
+      groups?: { [name in T[number]]: string } | { [key: string]: string };
+    })
+  | null;
