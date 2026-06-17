@@ -136,7 +136,7 @@ describe('main tests', () => {
     });
     expect(createProjectVersionMocked).toHaveBeenCalledWith({
       domain: 'action.atlassian.net',
-      auth: 'dXNlckBlbWFpbC5jb206amlyYV90azEyMw==',
+      auth: 'dXNlckBlbWFpbC5jb206amlyYV90azEyMw==', // gitleaks:allow
       version: {
         name: '@first-package@0.3.0',
         description: 'Last commit',
