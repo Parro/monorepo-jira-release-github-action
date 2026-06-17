@@ -7,6 +7,7 @@ import {
 } from './__mocks__/external/github.mock';
 import { getLastTagsMocked } from './__mocks__/libs/get-last-tags.mock';
 import { findInvolvedCommitsMocked } from './__mocks__/libs/find-involved-commits.mock';
+import { createProjectVersionMocked } from './__mocks__/libs/models/jira/create-project-version.mock';
 import { createReleaseMocked } from './__mocks__/libs/create-release.mock';
 
 import { run } from '../src/main';
@@ -16,8 +17,10 @@ describe('main tests', () => {
     process.env.GITHUB_TOKEN = 'abcd123';
 
     githubMocked.context.ref = '@first-package@0.3.0';
-    // getInputMocked.mockImplementationOnce(() => 'domain');
-    // getInputMocked.mockImplementationOnce(() => 'id');
+    getInputMocked.mockImplementationOnce(() => 'user@email.com');
+    getInputMocked.mockImplementationOnce(() => 'jira_tk123');
+    getInputMocked.mockImplementationOnce(() => 'action.atlassian.net');
+    getInputMocked.mockImplementationOnce(() => '1000');
     getInputMocked.mockImplementationOnce(() => 'AT');
     getInputMocked.mockImplementationOnce(() => 'abcd123');
     debugMocked.mockImplementationOnce(() => 'key');
@@ -48,9 +51,10 @@ describe('main tests', () => {
     findInvolvedCommitsMocked.mockResolvedValueOnce([
       {
         oid: '3b34067b66a550f8c536fda2825c8103f8cbc0bb',
-        message: 'Last commit'
+        message: 'AT-001 feat: Last commit'
       }
     ]);
+    createProjectVersionMocked.mockResolvedValueOnce();
     createReleaseMocked.mockResolvedValueOnce({
       headers: {},
       status: 201,
@@ -97,11 +101,13 @@ describe('main tests', () => {
 
     await run();
 
-    expect(getInputMocked).toHaveBeenCalledTimes(2);
-    // expect(getInputMocked).toHaveBeenNthCalledWith(1, 'jira_project_domain');
-    // expect(getInputMocked).toHaveBeenNthCalledWith(2, 'jira_project_id');
-    expect(getInputMocked).toHaveBeenNthCalledWith(1, 'jira_project_key');
-    expect(getInputMocked).toHaveBeenNthCalledWith(2, 'github-token');
+    expect(getInputMocked).toHaveBeenCalledTimes(6); 
+    expect(getInputMocked).toHaveBeenNthCalledWith(1, 'jira_email');
+    expect(getInputMocked).toHaveBeenNthCalledWith(2, 'jira_token');
+    expect(getInputMocked).toHaveBeenNthCalledWith(3, 'jira_project_domain');
+    expect(getInputMocked).toHaveBeenNthCalledWith(4, 'jira_project_id');
+    expect(getInputMocked).toHaveBeenNthCalledWith(5, 'jira_project_key');
+    expect(getInputMocked).toHaveBeenNthCalledWith(6, 'github-token');
     expect(getOctokitMocked).toHaveBeenCalledWith('abcd123');
     expect(graphqlDefaultsMocked).toHaveBeenCalledWith({
       headers: {
@@ -127,6 +133,16 @@ describe('main tests', () => {
         '@first-package@0.2.0',
         '@first-package@0.1.0'
       ]
+    });
+    expect(createProjectVersionMocked).toHaveBeenCalledWith({
+      domain: 'action.atlassian.net',
+      auth: 'dXNlckBlbWFpbC5jb206amlyYV90azEyMw==',
+      version: {
+        name: '@first-package@0.3.0',
+        description: 'Last commit',
+        projectId: 1000,
+        releaseDate: expect.any(String)
+      }
     });
     // expect(createReleaseMocked).toHaveBeenCalledWith({
     //   client: restClientMocked,

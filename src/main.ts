@@ -4,6 +4,9 @@ import * as github from '@actions/github';
 import getLastTags from './libs/get-last-tags';
 import findInvolvedCommits from './libs/find-involved-commits';
 import getCommitsMessage from './libs/get-commits-message';
+import createProjectVersion from './libs/models/jira/create-project-version';
+import getAtlassianAuthentication from './libs/models/jira/get-atlassian-authentication';
+import { ProjectVersionPostRequest } from './libs/models/jira/types';
 // import createRelease from './libs/create-release';
 
 /**
@@ -11,8 +14,10 @@ import getCommitsMessage from './libs/get-commits-message';
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 export async function run(): Promise<void> {
-  // const jiraProjectDomain = core.getInput('jira_project_domain');
-  // const jiraProjectId = core.getInput('jira_project_id');
+  const jiraEmail = core.getInput('jira_email');
+  const jiraToken = core.getInput('jira_token');
+  const jiraProjectDomain = core.getInput('jira_project_domain');
+  const jiraProjectId = core.getInput('jira_project_id');
   const jiraProjectKey = core.getInput('jira_project_key');
   const gitHubToken = core.getInput('github-token');
 
@@ -23,6 +28,7 @@ export async function run(): Promise<void> {
     repo: { owner, repo },
     ref
   } = github.context;
+  core.debug(`github.context: ${JSON.stringify(github.context)}`);
   core.debug(`ref: ${ref}`);
 
   const graphqlClient = octokit.graphql.defaults({
@@ -61,6 +67,28 @@ export async function run(): Promise<void> {
   });
 
   core.debug(`taskMessages: ${JSON.stringify(taskMessages)}`);
+
+  const tag = ref.replace('refs/tags/', '');
+
+  const atlassianAuth = getAtlassianAuthentication({
+    email: jiraEmail,
+    token: jiraToken
+  });
+
+  const versionData: ProjectVersionPostRequest = {
+    name: tag,
+    description: taskMessages.descriptions.join(', '),
+    projectId: parseInt(jiraProjectId, 10),
+    releaseDate: new Date().toISOString().split('T')[0] // Format as YYYY-MM-DD
+  };
+
+  const version = await createProjectVersion({
+    domain: jiraProjectDomain,
+    auth: atlassianAuth,
+    version: versionData
+  });
+
+  core.debug(`version: ${JSON.stringify(version)}`);
   // const createReleaseResponse = await createRelease({
   //   client: octokit.rest,
   //   owner,
