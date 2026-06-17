@@ -1,4 +1,4 @@
-import compareTags from './compare-tags';
+import compareTags from './models/github/compare-tags';
 
 import type { FindInvolvedCommits } from './types';
 

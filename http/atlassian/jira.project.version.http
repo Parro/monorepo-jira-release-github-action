@@ -1,0 +1,3 @@
+GET https://parrok.atlassian.net/rest/api/3/project/AT/version
+Authorization: Basic {{ATLASSIAN_API_TOKEN}}
+Content-Type: application/json

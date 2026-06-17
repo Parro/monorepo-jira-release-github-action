@@ -1,6 +1,6 @@
 import { jest, describe, it, expect } from '@jest/globals';
 
-import getLastTags from '../../src/libs/get-last-tags';
+import getLastTags from '../../../../src/libs/models/github/get-last-tags';
 
 import { graphql } from '@octokit/graphql';
 

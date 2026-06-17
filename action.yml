@@ -10,6 +10,12 @@ branding:
 
 # Define your inputs here.
 inputs:
+  jira_email:
+    description: 'Jira service user email'
+    required: true
+  jira_token:
+    description: 'Jira API token'
+    required: true
   jira_project_domain:
     description: 'Jira project domain'
     required: true

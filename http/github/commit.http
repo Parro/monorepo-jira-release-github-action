@@ -1,0 +1,40 @@
+POST https://api.github.com/graphql
+Content-Type: application/json
+Authorization: Bearer {{GITHUB_TOKEN}}
+
+query ($owner: String!, $repo: String!, $currentTag: String!, $previousTag: String!) {
+  repository(owner: $owner, name: $repo) {
+    ref(qualifiedName: $previousTag) {
+      compare(headRef: $currentTag) {
+        status
+        aheadBy
+        commits(first: 100) {
+          totalCount
+          nodes {
+              message
+              messageHeadline
+              messageBody
+              author {
+                user {
+                  login
+                }
+                name
+                email
+            }
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+        }
+      }
+    }
+  }
+}
+
+{
+  "owner": "github",
+  "repo": "local-action",
+  "currentTag": "v7.0.1",
+  "previousTag": "v7.0.0"
+}
