@@ -5,10 +5,10 @@ import {
   githubMocked,
   getOctokitMocked
 } from './__mocks__/external/github.mock';
-import { getLastTagsMocked } from './__mocks__/libs/get-last-tags.mock';
+import { getLastTagsMocked } from './__mocks__/libs/models/github/get-last-tags.mock';
 import { findInvolvedCommitsMocked } from './__mocks__/libs/find-involved-commits.mock';
 import { createProjectVersionMocked } from './__mocks__/libs/models/jira/create-project-version.mock';
-import { createReleaseMocked } from './__mocks__/libs/create-release.mock';
+import { createReleaseMocked } from './__mocks__/libs/models/github/create-release.mock';
 
 import { run } from '../src/main';
 

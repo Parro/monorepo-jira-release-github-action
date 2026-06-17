@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 
-import getLastTags from './libs/get-last-tags';
+import getLastTags from './libs/models/github/get-last-tags';
 import findInvolvedCommits from './libs/find-involved-commits';
 import getCommitsMessage from './libs/get-commits-message';
 import createProjectVersion from './libs/models/jira/create-project-version';
