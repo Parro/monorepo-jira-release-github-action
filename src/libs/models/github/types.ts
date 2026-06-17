@@ -2,7 +2,6 @@ import type { graphql, GraphQlQueryResponseData } from '@octokit/graphql';
 import type { Api } from '@octokit/plugin-rest-endpoint-methods/dist-types/types';
 import type { Endpoints } from '@octokit/types';
 
-
 export type CompareTags = (args: {
   client: typeof graphql;
   owner: string;

@@ -22,7 +22,6 @@ export type CreateProjectVersion = (args: {
   version: ProjectVersionPostRequest;
 }) => Promise<void>;
 
-
 export type GetAtlassianAuthentication = (args: {
   email: string;
   token: string;

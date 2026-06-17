@@ -101,7 +101,7 @@ describe('main tests', () => {
 
     await run();
 
-    expect(getInputMocked).toHaveBeenCalledTimes(6); 
+    expect(getInputMocked).toHaveBeenCalledTimes(6);
     expect(getInputMocked).toHaveBeenNthCalledWith(1, 'jira_email');
     expect(getInputMocked).toHaveBeenNthCalledWith(2, 'jira_token');
     expect(getInputMocked).toHaveBeenNthCalledWith(3, 'jira_project_domain');
