@@ -29922,41 +29922,6 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 3115:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const compareTags = async ({ client, owner, repo, currentTag, previousTag }) => {
-    const query = `
-query ($owner: String!, $repo: String!, $currentTag: String!, $previousTag: String!) {
-  repository(owner: $owner, name: $repo) {
-    ref(qualifiedName: $currentTag) {
-      compare(headRef: $previousTag) {
-        commits(first: 100) {
-          nodes {
-            oid,
-            message
-          }
-        }
-      }
-    }
-  }
-}
-`;
-    return client(query, {
-        owner,
-        repo,
-        currentTag,
-        previousTag
-    });
-};
-exports["default"] = compareTags;
-
-
-/***/ }),
-
 /***/ 6591:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -29966,7 +29931,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const compare_tags_1 = __importDefault(__nccwpck_require__(3115));
+const compare_tags_1 = __importDefault(__nccwpck_require__(1261));
 const findInvolvedCommits = async ({ client, owner, repo, currentTag, tagsList }) => {
     const beforeTag = tagsList.shift();
     if (beforeTag !== undefined) {
@@ -30034,7 +29999,42 @@ exports["default"] = getCommitsMessage;
 
 /***/ }),
 
-/***/ 901:
+/***/ 1261:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const compareTags = async ({ client, owner, repo, currentTag, previousTag }) => {
+    const query = `
+query ($owner: String!, $repo: String!, $currentTag: String!, $previousTag: String!) {
+  repository(owner: $owner, name: $repo) {
+    ref(qualifiedName: $currentTag) {
+      compare(headRef: $previousTag) {
+        commits(first: 100) {
+          nodes {
+            oid,
+            message
+          }
+        }
+      }
+    }
+  }
+}
+`;
+    return client(query, {
+        owner,
+        repo,
+        currentTag,
+        previousTag
+    });
+};
+exports["default"] = compareTags;
+
+
+/***/ }),
+
+/***/ 2553:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -30061,6 +30061,86 @@ query ($owner: String!, $repo: String!, $first: Int) {
     });
 };
 exports["default"] = getLastTags;
+
+
+/***/ }),
+
+/***/ 935:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const createProjectVersion = async ({ domain, auth, version }) => {
+    const url = `https://${domain}/rest/api/3/version`;
+    core.debug(`createProjectVersion url: ${url}`);
+    const bodyJson = version;
+    const body = JSON.stringify(bodyJson);
+    core.debug(`createProjectVersion body: ${body}}`);
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            Accept: 'application/json',
+            'Accept-Language': 'en',
+            Authorization: `Basic ${auth}`,
+            'Content-Type': 'application/json',
+            'User-Agent': 'monorepo-jira-release-github-action/1.0.0'
+        },
+        body
+    });
+    const data = await response.json();
+    core.debug(`createProjectVersion response data: ${data}}`);
+    return data;
+};
+exports["default"] = createProjectVersion;
+
+
+/***/ }),
+
+/***/ 802:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const getAtlassianAuthentication = ({ email, token }) => {
+    return Buffer.from(`${email}:${token}`).toString('base64');
+};
+exports["default"] = getAtlassianAuthentication;
 
 
 /***/ }),
@@ -30110,22 +30190,27 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = run;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-const get_last_tags_1 = __importDefault(__nccwpck_require__(901));
+const get_last_tags_1 = __importDefault(__nccwpck_require__(2553));
 const find_involved_commits_1 = __importDefault(__nccwpck_require__(6591));
 const get_commits_message_1 = __importDefault(__nccwpck_require__(4106));
+const create_project_version_1 = __importDefault(__nccwpck_require__(935));
+const get_atlassian_authentication_1 = __importDefault(__nccwpck_require__(802));
 // import createRelease from './libs/create-release';
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 async function run() {
-    // const jiraProjectDomain = core.getInput('jira_project_domain');
-    // const jiraProjectId = core.getInput('jira_project_id');
+    const jiraEmail = core.getInput('jira_email');
+    const jiraToken = core.getInput('jira_token');
+    const jiraProjectDomain = core.getInput('jira_project_domain');
+    const jiraProjectId = core.getInput('jira_project_id');
     const jiraProjectKey = core.getInput('jira_project_key');
     const gitHubToken = core.getInput('github-token');
     core.debug(`jiraProjectKey: ${jiraProjectKey}`);
     const octokit = github.getOctokit(gitHubToken);
     const { repo: { owner, repo }, ref } = github.context;
+    core.debug(`github.context: ${JSON.stringify(github.context)}`);
     core.debug(`ref: ${ref}`);
     const graphqlClient = octokit.graphql.defaults({
         headers: {
@@ -30154,6 +30239,23 @@ async function run() {
         commits: involvedCommits
     });
     core.debug(`taskMessages: ${JSON.stringify(taskMessages)}`);
+    const tag = ref.replace('refs/tags/', '');
+    const atlassianAuth = (0, get_atlassian_authentication_1.default)({
+        email: jiraEmail,
+        token: jiraToken
+    });
+    const versionData = {
+        name: tag,
+        description: taskMessages.descriptions.join(', '),
+        projectId: parseInt(jiraProjectId, 10),
+        releaseDate: new Date().toISOString().split('T')[0] // Format as YYYY-MM-DD
+    };
+    const version = await (0, create_project_version_1.default)({
+        domain: jiraProjectDomain,
+        auth: atlassianAuth,
+        version: versionData
+    });
+    core.debug(`version: ${JSON.stringify(version)}`);
     // const createReleaseResponse = await createRelease({
     //   client: octokit.rest,
     //   owner,
