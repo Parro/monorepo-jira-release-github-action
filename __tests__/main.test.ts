@@ -180,7 +180,7 @@ describe('main tests', () => {
 
     expect(updateIssueMocked).toHaveBeenCalledTimes(1);
     expect(updateIssueMocked).toHaveBeenNthCalledWith(1, {
-      auth: 'dXNlckBlbWFpbC5jb206amlyYV90azEyMw==',
+      auth: 'dXNlckBlbWFpbC5jb206amlyYV90azEyMw==', // gitleaks:allow
       domain: 'action.atlassian.net',
       issueData: {
         fixVersions: [
