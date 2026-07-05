@@ -8,6 +8,7 @@ import {
 import { getLastTagsMocked } from './__mocks__/libs/models/github/get-last-tags.mock';
 import { findInvolvedCommitsMocked } from './__mocks__/libs/find-involved-commits.mock';
 import { createProjectVersionMocked } from './__mocks__/libs/models/jira/create-project-version.mock';
+import { updateIssueMocked } from './__mocks__/libs/models/jira/update-issue.mock';
 import { createReleaseMocked } from './__mocks__/libs/models/github/create-release.mock';
 
 import { run } from '../src/main';
@@ -54,7 +55,39 @@ describe('main tests', () => {
         message: 'AT-001 feat: Last commit'
       }
     ]);
-    createProjectVersionMocked.mockResolvedValueOnce();
+    createProjectVersionMocked.mockResolvedValueOnce({
+      id: '10000',
+      description:
+        'Edit for first task, Important edits for second task, More stuff',
+      name: '@action-test@0.35.0',
+      archived: false,
+      released: false,
+      releaseDate: '2026-06-10',
+      userReleaseDate: '10/Jun/26',
+      projectId: 10000
+    });
+    updateIssueMocked.mockResolvedValueOnce({
+      expand:
+        'renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations',
+      id: '10037',
+      self: 'https://parrok.atlassian.net/rest/api/3/issue/10030',
+      key: 'AT-001',
+      names: { fixVersions: 'Fix versions' },
+      fields: {
+        fixVersions: [
+          {
+            self: 'https://parrok.atlassian.net/rest/api/3/version/10074',
+            id: '10074',
+            description:
+              'Edit for first task, Important edits for second task, More stuff',
+            name: '@action-test@0.35.0',
+            archived: false,
+            released: false,
+            releaseDate: '2026-07-05'
+          }
+        ]
+      }
+    });
     createReleaseMocked.mockResolvedValueOnce({
       headers: {},
       status: 201,
@@ -143,6 +176,22 @@ describe('main tests', () => {
         projectId: 1000,
         releaseDate: expect.any(String)
       }
+    });
+
+    expect(updateIssueMocked).toHaveBeenCalledTimes(1);
+    expect(updateIssueMocked).toHaveBeenNthCalledWith(1, {
+      auth: 'dXNlckBlbWFpbC5jb206amlyYV90azEyMw==',
+      domain: 'action.atlassian.net',
+      issueData: {
+        fixVersions: [
+          {
+            add: {
+              id: '10000'
+            }
+          }
+        ]
+      },
+      issueKey: 'AT-001'
     });
     // expect(createReleaseMocked).toHaveBeenCalledWith({
     //   client: restClientMocked,

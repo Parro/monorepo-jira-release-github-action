@@ -5,9 +5,11 @@ import getLastTags from './libs/models/github/get-last-tags';
 import findInvolvedCommits from './libs/find-involved-commits';
 import getCommitsMessage from './libs/get-commits-message';
 import createProjectVersion from './libs/models/jira/create-project-version';
+import updateIssue from './libs/models/jira/update-issue';
 import getAtlassianAuthentication from './libs/models/jira/get-atlassian-authentication';
-import { ProjectVersionPostRequest } from './libs/models/jira/types';
 // import createRelease from './libs/create-release';
+
+import { ProjectVersionPostRequest } from './libs/models/jira/types';
 
 /**
  * The main function for the action.
@@ -88,7 +90,22 @@ export async function run(): Promise<void> {
     version: versionData
   });
 
+  const updateIssuesPromises = taskMessages.tasks.map(async (task) => {
+    return updateIssue({
+      domain: jiraProjectDomain,
+      auth: atlassianAuth,
+      issueKey: task,
+      issueData: {
+        fixVersions: [{ add: { id: version.id } }]
+      }
+    });
+  });
+
   core.debug(`version: ${JSON.stringify(version)}`);
+
+  const updateIssuesResponses = await Promise.all(updateIssuesPromises);
+
+  core.debug(`updateIssuesResponses: ${JSON.stringify(updateIssuesResponses)}`);
   // const createReleaseResponse = await createRelease({
   //   client: octokit.rest,
   //   owner,
