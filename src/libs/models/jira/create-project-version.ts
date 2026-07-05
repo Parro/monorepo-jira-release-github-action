@@ -1,5 +1,5 @@
 import * as core from '@actions/core';
-import type { CreateProjectVersion } from './types';
+import type { CreateProjectVersion, ProjectVersion } from './types';
 
 const createProjectVersion: CreateProjectVersion = async ({
   domain,
@@ -25,9 +25,9 @@ const createProjectVersion: CreateProjectVersion = async ({
     },
     body
   });
-  const data = await response.json();
+  const data = (await response.json()) as ProjectVersion;
 
-  core.debug(`createProjectVersion response data: ${data}}`);
+  core.debug(`createProjectVersion response data: ${JSON.stringify(data)}}`);
 
   return data;
 };
