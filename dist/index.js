@@ -30122,8 +30122,8 @@ const createProjectVersion = async ({ domain, auth, version }) => {
         },
         body
     });
-    const data = await response.json();
-    core.debug(`createProjectVersion response data: ${data}}`);
+    const data = (await response.json());
+    core.debug(`createProjectVersion response data: ${JSON.stringify(data)}}`);
     return data;
 };
 exports["default"] = createProjectVersion;
@@ -30141,6 +30141,72 @@ const getAtlassianAuthentication = ({ email, token }) => {
     return Buffer.from(`${email}:${token}`).toString('base64');
 };
 exports["default"] = getAtlassianAuthentication;
+
+
+/***/ }),
+
+/***/ 3761:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const updateIssue = async ({ domain, auth, issueKey, issueData }) => {
+    const url = `https://${domain}/rest/api/3/issue/${issueKey}?returnIssue=true`;
+    core.debug(`updateIssue url: ${url}`);
+    const bodyJson = { update: issueData };
+    const body = JSON.stringify(bodyJson);
+    core.debug(`updateIssue body: ${body}}`);
+    const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+            Accept: 'application/json',
+            'Accept-Language': 'en',
+            Authorization: `Basic ${auth}`,
+            'Content-Type': 'application/json',
+            'User-Agent': 'monorepo-jira-release-github-action/1.0.0'
+        },
+        body
+    });
+    const data = (await response.json());
+    core.debug(`updateIssue response data: ${JSON.stringify(data)}`);
+    return data;
+};
+exports["default"] = updateIssue;
 
 
 /***/ }),
@@ -30194,8 +30260,8 @@ const get_last_tags_1 = __importDefault(__nccwpck_require__(2553));
 const find_involved_commits_1 = __importDefault(__nccwpck_require__(6591));
 const get_commits_message_1 = __importDefault(__nccwpck_require__(4106));
 const create_project_version_1 = __importDefault(__nccwpck_require__(935));
+const update_issue_1 = __importDefault(__nccwpck_require__(3761));
 const get_atlassian_authentication_1 = __importDefault(__nccwpck_require__(802));
-// import createRelease from './libs/create-release';
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -30255,7 +30321,19 @@ async function run() {
         auth: atlassianAuth,
         version: versionData
     });
+    const updateIssuesPromises = taskMessages.tasks.map(async (task) => {
+        return (0, update_issue_1.default)({
+            domain: jiraProjectDomain,
+            auth: atlassianAuth,
+            issueKey: task,
+            issueData: {
+                fixVersions: [{ add: { id: version.id } }]
+            }
+        });
+    });
     core.debug(`version: ${JSON.stringify(version)}`);
+    const updateIssuesResponses = await Promise.all(updateIssuesPromises);
+    core.debug(`updateIssuesResponses: ${JSON.stringify(updateIssuesResponses)}`);
     // const createReleaseResponse = await createRelease({
     //   client: octokit.rest,
     //   owner,
